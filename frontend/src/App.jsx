@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
+import CareerExplorerPage from './pages/CareerExplorerPage';
 import OnboardingPage from './pages/OnboardingPage';
 import AnalysisPage from './pages/AnalysisPage';
 import RoadmapPage from './pages/RoadmapPage';
@@ -8,8 +9,9 @@ import DashboardPage from './pages/DashboardPage';
 
 export default function App() {
   const [activePage, setActivePage] = useState('landing');
+  const [prefilledRole, setPrefilledRole] = useState('');
   
-  // State for current user session
+  // User session state
   const [activeUser, setActiveUser] = useState({
     user_id: null,
     profile: null,
@@ -18,6 +20,12 @@ export default function App() {
   });
 
   const [roadmapData, setRoadmapData] = useState(null);
+
+  // Callback when a career is selected from Career Explorer
+  const handleSelectCareerFromExplorer = (selectedRole) => {
+    setPrefilledRole(selectedRole);
+    setActivePage('onboarding');
+  };
 
   // Callback when onboarding + skill gap analysis completes
   const handleCompleteOnboarding = (analysisResponse, userProfile) => {
@@ -38,7 +46,6 @@ export default function App() {
       roadmap_id: roadmapId
     }));
 
-    // Fetch full roadmap with tasks & stats
     try {
       const res = await fetch(`http://127.0.0.1:5000/api/roadmap/${activeUser.user_id}`);
       if (res.ok) {
@@ -93,12 +100,20 @@ export default function App() {
         {activePage === 'landing' && (
           <LandingPage 
             onStartOnboarding={() => setActivePage('onboarding')} 
+            onOpenExplorer={() => setActivePage('explorer')}
+          />
+        )}
+
+        {activePage === 'explorer' && (
+          <CareerExplorerPage 
+            onSelectCareer={handleSelectCareerFromExplorer}
           />
         )}
 
         {activePage === 'onboarding' && (
           <OnboardingPage 
             onCompleteOnboarding={handleCompleteOnboarding} 
+            prefilledRole={prefilledRole}
           />
         )}
 
@@ -126,7 +141,6 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
       <footer style={{
         textAlign: 'center',
         padding: '2rem 1.5rem',
@@ -134,7 +148,7 @@ export default function App() {
         color: '#64748B',
         fontSize: '0.85rem'
       }}>
-        <p>© 2026 PathAI Roadmap Generator — Phase 1 Base & Main Working System</p>
+        <p>© 2026 PathAI Multi-Career Learning Roadmap Platform</p>
       </footer>
     </div>
   );

@@ -1,9 +1,10 @@
 import React from 'react';
-import { Sparkles, Map, BarChart3, Compass, CheckCircle2, UserCheck } from 'lucide-react';
+import { Sparkles, Map, BarChart3, Compass, CheckCircle2, UserCheck, Search } from 'lucide-react';
 
 export default function Navbar({ activePage, setActivePage, activeUser }) {
   const navItems = [
     { id: 'landing', label: 'Home', icon: Compass },
+    { id: 'explorer', label: 'Career Explorer', icon: Search },
     { id: 'onboarding', label: 'Onboarding', icon: UserCheck },
     { id: 'analysis', label: 'Skill Gap', icon: Sparkles, disabled: !activeUser?.skill_gap },
     { id: 'roadmap', label: 'My Roadmap', icon: Map, disabled: !activeUser?.roadmap_id },
@@ -48,12 +49,12 @@ export default function Navbar({ activePage, setActivePage, activeUser }) {
             <h1 style={{ fontSize: '1.2rem', fontWeight: 800, background: 'linear-gradient(135deg, #FFFFFF 0%, #94A3B8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               PathAI <span style={{ color: '#8B5CF6', WebkitTextFillColor: '#8B5CF6' }}>Roadmap</span>
             </h1>
-            <p style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 500, letterSpacing: '0.05em' }}>AI CAREER ARCHITECT</p>
+            <p style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 500, letterSpacing: '0.05em' }}>MULTI-CAREER PLATFORM</p>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', gap: '0.5rem' }}>
+        <nav style={{ display: 'flex', gap: '0.4rem' }}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activePage === item.id;
@@ -67,27 +68,27 @@ export default function Navbar({ activePage, setActivePage, activeUser }) {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.55rem 1rem',
+                  gap: '0.45rem',
+                  padding: '0.55rem 0.9rem',
                   borderRadius: '10px',
                   border: isActive ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid transparent',
                   background: isActive ? 'rgba(139, 92, 246, 0.12)' : 'transparent',
                   color: isActive ? '#C084FC' : (isDisabled ? '#475569' : '#94A3B8'),
                   fontWeight: isActive ? 600 : 500,
-                  fontSize: '0.88rem',
+                  fontSize: '0.86rem',
                   cursor: isDisabled ? 'not-allowed' : 'pointer',
                   transition: 'all 0.2s ease',
                   opacity: isDisabled ? 0.5 : 1
                 }}
               >
-                <Icon size={16} />
+                <Icon size={15} />
                 <span>{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Active Profile Pill / Action */}
+        {/* Profile Pill */}
         <div>
           {activeUser?.name ? (
             <div 
@@ -121,10 +122,10 @@ export default function Navbar({ activePage, setActivePage, activeUser }) {
           ) : (
             <button 
               className="btn-primary" 
-              onClick={() => setActivePage('onboarding')}
+              onClick={() => setActivePage('explorer')}
               style={{ padding: '0.55rem 1.1rem', fontSize: '0.85rem' }}
             >
-              Start Free <Sparkles size={14} />
+              Career Explorer <Search size={14} />
             </button>
           )}
         </div>

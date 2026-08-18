@@ -1,6 +1,7 @@
 import os
 import json
 import uuid
+import re
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -8,48 +9,334 @@ load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+    except Exception as e:
+        print(f"Gemini config notice: {e}")
 
-# Baseline skill requirements for popular tech roles
-ROLE_REQUIREMENTS = {
-    "Full-Stack Developer": [
-        "HTML", "CSS", "JavaScript", "TypeScript", "React", "Node.js", "Express",
-        "REST API", "PostgreSQL", "MongoDB", "Git", "Docker", "CI/CD", "Testing"
+# Multi-Career Skill Taxonomies across diverse fields
+CAREER_TAXONOMIES = {
+    "Software & Technology": [
+        "Python", "JavaScript", "TypeScript", "HTML", "CSS", "React", "Node.js", "Java", "C++",
+        "Data Structures & Algorithms", "System Design", "SQL", "Git", "Docker", "REST API", "Testing"
     ],
-    "Frontend Developer": [
-        "HTML", "CSS", "JavaScript", "TypeScript", "React", "Next.js", "Tailwind CSS",
-        "Redux", "REST API", "GraphQL", "Vite", "Performance Optimization", "Accessibility (a11y)", "Git"
+    "Data Science & AI": [
+        "Python", "R", "SQL", "Statistics", "Machine Learning", "Deep Learning", "Pandas",
+        "NumPy", "PyTorch", "TensorFlow", "Data Visualization", "Big Data", "NLP", "LLMs"
     ],
-    "Backend Developer": [
-        "Python", "Node.js", "Django", "Flask", "FastAPI", "SQL", "PostgreSQL",
-        "Redis", "REST API", "Microservices", "Docker", "Kubernetes", "Git", "Security"
+    "Chartered Accountancy & Finance": [
+        "Accounting Standards", "Financial Accounting", "Costing & Management Accounting",
+        "Corporate Law", "Taxation (Direct & Indirect)", "Auditing & Assurance", "Financial Management",
+        "Advanced Financial Reporting", "Strategic Cost Management", "Articleship Training"
     ],
-    "AI / ML Engineer": [
-        "Python", "Math & Statistics", "Data Analysis", "NumPy", "Pandas",
-        "Scikit-Learn", "PyTorch", "TensorFlow", "Deep Learning", "NLP",
-        "LLMs", "LangChain", "Model Deployment", "Docker", "Git"
+    "Law & Legal Services": [
+        "Constitutional Law", "Contract Law", "Criminal Law (IPC/CrPC)", "Civil Procedure (CPC)",
+        "Corporate Law", "Intellectual Property Law", "Legal Drafting & Conveyancing",
+        "Courtroom Advocacy", "Arbitration & Dispute Resolution", "Legal Research", "Bar Examination"
     ],
-    "DevOps Engineer": [
-        "Linux", "Bash", "Python", "Docker", "Kubernetes", "AWS", "CI/CD",
-        "Terraform", "Ansible", "Monitoring (Prometheus/Grafana)", "Networking", "Git", "Security"
+    "Medicine & Healthcare": [
+        "Anatomy & Physiology", "Biochemistry", "Pathology", "Pharmacology", "General Medicine",
+        "General Surgery", "Pediatrics", "Obstetrics & Gynecology", "Clinical Diagnostics",
+        "Medical Ethics", "Hospital Internship", "Medical Licensing Examination"
     ],
-    "Data Engineer": [
-        "Python", "SQL", "PostgreSQL", "Apache Spark", "Airflow", "Kafka",
-        "Data Warehousing (BigQuery/Snowflake)", "Docker", "Git", "ETL Pipelines"
+    "Engineering (Civil/Mech/Elec)": [
+        "Engineering Mathematics", "Thermodynamics / Structural Analysis", "CAD / SolidWorks / AutoCAD",
+        "Fluid Mechanics", "Circuit Analysis", "Materials Science", "Project Management",
+        "Site Safety & Standards", "Design & Simulation", "Professional Engineer Exam"
+    ],
+    "Finance & Investment Banking": [
+        "Financial Modeling", "Corporate Valuation", "Excel & Financial Analytics",
+        "Mergers & Acquisitions (M&A)", "Portfolio Management", "Equity Research",
+        "Financial Accounting", "Risk Management (FRM)", "CFA Fundamentals"
+    ],
+    "Business & Management / MBA": [
+        "Business Strategy", "Operations Management", "Organizational Behavior",
+        "Financial Management", "Marketing Strategy", "Leadership & Team Management",
+        "Project Management (PMP/Agile)", "Data-Driven Decision Making", "Business Negotiation"
+    ],
+    "UI/UX & Graphic Design": [
+        "Figma", "User Research", "Wireframing & Prototyping", "Design Systems",
+        "Information Architecture", "Adobe Creative Suite (Photoshop/Illustrator)",
+        "Typography & Color Theory", "Usability Testing", "UI Animation"
+    ],
+    "Marketing & Digital Media": [
+        "Digital Marketing", "SEO & SEM", "Social Media Strategy", "Content Marketing",
+        "Google Analytics", "Email Marketing Campaigns", "Copywriting",
+        "Brand Strategy", "Performance Marketing & Paid Ads", "Conversion Rate Optimization"
+    ],
+    "Content, Media & Journalism": [
+        "Investigative Journalism", "Copywriting & Editing", "Media Law & Ethics",
+        "Digital Storytelling", "Video Editing & Production", "Podcast Production",
+        "Search Engine Optimization (SEO)", "Social Media Management", "Broadcasting"
+    ],
+    "Teaching & Education": [
+        "Pedagogy & Teaching Methodology", "Educational Psychology", "Curriculum Design",
+        "Classroom Management", "Educational Technology", "Student Assessment & Evaluation",
+        "Subject Matter Expertise", "Special Education Principles"
+    ],
+    "Government & Public Sector": [
+        "Public Administration", "Indian Constitution & Polity / Governance", "General Studies",
+        "Current Affairs", "Public Policy Analysis", "Aptitude & Quantitative Reasoning",
+        "Ethics & Integrity", "Civil Services Examination"
+    ],
+    "Cybersecurity & Cloud": [
+        "Network Security", "Ethical Hacking & Penetration Testing", "Linux Systems Administration",
+        "Cloud Computing (AWS/Azure/GCP)", "Cryptography", "Incident Response",
+        "SIEM Tools", "Security Compliance & Auditing", "DevSecOps"
+    ],
+    "Biotechnology & Life Sciences": [
+        "Molecular Biology", "Genetics & Genomics", "Bioinformatics", "Cell Culture Techniques",
+        "Bioprocess Engineering", "Immunology", "Lab Safety & Quality Assurance",
+        "Recombinant DNA Technology", "Clinical Research"
     ]
 }
 
+# Domain-specific structural blueprints for different career fields
+CAREER_BLUEPRINTS = {
+    "ca": {
+        "structure_name": "Chartered Accountancy Qualification Path",
+        "phases": [
+            {
+                "phase_id": 1,
+                "title": "Foundation & Basic Eligibility",
+                "duration": "4-6 Months",
+                "focus": "Build core accounting fundamentals, business law, and quantitative aptitude.",
+                "topics": ["Accounting Principles", "Business Laws & Communication", "Quantitative Aptitude", "Business Economics"]
+            },
+            {
+                "phase_id": 2,
+                "title": "Intermediate Course & Group Subjects",
+                "duration": "8-10 Months",
+                "focus": "Master intermediate level accounting, corporate laws, taxation, and auditing.",
+                "topics": ["Corporate & Other Laws", "Cost & Management Accounting", "Direct & Indirect Taxation", "Auditing & Code of Ethics"]
+            },
+            {
+                "phase_id": 3,
+                "title": "Practical Articleship Training & Real-World Exposure",
+                "duration": "24-36 Months",
+                "focus": "Hands-on articleship under a practicing CA handling real statutory audits and tax filings.",
+                "topics": ["Statutory & Internal Audit", "Tax Filing & Assessment", "Financial Advisory", "IT & Soft Skills Training"]
+            },
+            {
+                "phase_id": 4,
+                "title": "CA Final Exam & Professional Qualification",
+                "duration": "6-12 Months",
+                "focus": "Advanced financial reporting, strategic financial management, and professional qualification.",
+                "topics": ["Advanced Financial Reporting", "Strategic Financial Management", "Advanced Auditing", "Strategic Cost Management"]
+            }
+        ]
+    },
+    "law": {
+        "structure_name": "Legal Practice & Bar Enrollment Path",
+        "phases": [
+            {
+                "phase_id": 1,
+                "title": "Legal Eligibility & Foundation Studies",
+                "duration": "Semester 1-2 (Year 1)",
+                "focus": "Understand constitutional principles, legal logic, jurisprudence, and legal writing.",
+                "topics": ["Constitutional Law", "Legal Methods & Reasoning", "Law of Torts", "Legal History & Philosophy"]
+            },
+            {
+                "phase_id": 2,
+                "title": "Core Statutory Laws & Drafting",
+                "duration": "Semester 3-6 (Year 2-3)",
+                "focus": "Master substantive civil, criminal, contract, and corporate laws.",
+                "topics": ["Contract Law", "Criminal Law (IPC/CrPC)", "Civil Procedure Code (CPC)", "Corporate & Commercial Law"]
+            },
+            {
+                "phase_id": 3,
+                "title": "Courtroom Internships & Clinical Legal Training",
+                "duration": "Semester 7-9 (Year 4-5)",
+                "focus": "Gain hands-on judicial/chamber internships, moot court practice, and legal drafting.",
+                "topics": ["Courtroom Advocacy", "Client Counseling", "Drafting, Pleading & Conveyancing", "Alternative Dispute Resolution (ADR)"]
+            },
+            {
+                "phase_id": 4,
+                "title": "Bar Examination, Enrollment & Specialized Practice",
+                "duration": "Post-Degree (6-12 Months)",
+                "focus": "Clear Bar Examination, obtain Bar Council enrollment, and launch legal practice or corporate law role.",
+                "topics": ["All India Bar Examination (AIBE)", "Bar Council Enrollment", "Chamber Practice / Corporate Legal Counsel", "Specialization (IP/Tax/Cyber Law)"]
+            }
+        ]
+    },
+    "medical": {
+        "structure_name": "Medical Education & Licensing Path",
+        "phases": [
+            {
+                "phase_id": 1,
+                "title": "Pre-Clinical & Foundation Sciences",
+                "duration": "Phase I (1.5 Years)",
+                "focus": "Master fundamental human anatomy, physiology, and biochemistry.",
+                "topics": ["Human Anatomy", "Physiology", "Biochemistry", "Medical Terminology & Ethics"]
+            },
+            {
+                "phase_id": 2,
+                "title": "Para-Clinical & Diagnostic Foundations",
+                "duration": "Phase II (1.5 Years)",
+                "focus": "Study disease mechanisms, drug actions, and diagnostic pathology.",
+                "topics": ["Pathology", "Pharmacology", "Microbiology", "Forensic Medicine"]
+            },
+            {
+                "phase_id": 3,
+                "title": "Clinical Medicine & Surgical Specialties",
+                "duration": "Phase III (2 Years)",
+                "focus": "Clinical rotations in internal medicine, general surgery, pediatrics, and OB-GYN.",
+                "topics": ["General Medicine", "General Surgery", "Pediatrics", "Obstetrics & Gynecology", "Community Medicine"]
+            },
+            {
+                "phase_id": 4,
+                "title": "Compulsory Hospital Internship & Medical Licensing",
+                "duration": "1 Year Rotational Internship",
+                "focus": "Hands-on patient care in hospital wards, emergency care, and medical licensing registration.",
+                "topics": ["Ward Duty & Emergency Care", "Minor Surgical Procedures", "Licensing Board Exam (NEXT/USMLE)", "Specialty Residency Selection"]
+            }
+        ]
+    },
+    "engineering": {
+        "structure_name": "Professional Engineering Track",
+        "phases": [
+            {
+                "phase_id": 1,
+                "title": "Engineering Mathematics & Science Foundations",
+                "duration": "Year 1 (Weeks 1-12)",
+                "focus": "Build mathematical rigor, calculus, physics, and basic engineering design.",
+                "topics": ["Calculus & Linear Algebra", "Engineering Physics/Chemistry", "Basic Electrical & Mechanical Concepts", "Computer Programming for Engineers"]
+            },
+            {
+                "phase_id": 2,
+                "title": "Core Discipline Mastery & Simulation Tools",
+                "duration": "Year 2-3 (Weeks 13-28)",
+                "focus": "Deep dive into discipline-specific core subjects and CAD/simulation software.",
+                "topics": ["Core Engineering Theory", "CAD / Finite Element Analysis (FEA)", "Materials Science & Strength", "Laboratory & Testing Procedures"]
+            },
+            {
+                "phase_id": 3,
+                "title": "Applied Industry Projects & Field Training",
+                "duration": "Year 3-4 (Weeks 29-40)",
+                "focus": "Industrial internships, prototype design, and field safety compliance.",
+                "topics": ["Industry Internship", "System Design & Optimization", "Project Management & Safety Standards", "Prototype Fabrication"]
+            },
+            {
+                "phase_id": 4,
+                "title": "Capstone Engineering System & Career Accreditation",
+                "duration": "Final Semester (Weeks 41-48)",
+                "focus": "Deliver flagship capstone project and prepare for FE/PE licensing or industry role.",
+                "topics": ["Major Capstone Design Project", "Professional Engineer (FE/PE) Preparation", "Technical Documentation & Presentation", "Industry Job Search & Interviews"]
+            }
+        ]
+    },
+    "software": {
+        "structure_name": "Software Engineering & Developer Track",
+        "phases": [
+            {
+                "phase_id": 1,
+                "title": "Programming & CS Fundamentals",
+                "duration": "Weeks 1-3",
+                "focus": "Master core programming language, version control, and computer science basics.",
+                "topics": ["Core Language Fundamentals", "Git & GitHub Workflow", "Basic Data Structures", "Command Line & IDE Setup"]
+            },
+            {
+                "phase_id": 2,
+                "title": "Data Structures, Algorithms & System Building",
+                "duration": "Weeks 4-7",
+                "focus": "Solve algorithmic challenges and build full-stack web/software applications.",
+                "topics": ["Advanced DSA & Problem Solving", "Frontend / Backend Frameworks", "Database & API Design", "System Architecture"]
+            },
+            {
+                "phase_id": 3,
+                "title": "Production Projects, DevOps & Testing",
+                "duration": "Weeks 8-10",
+                "focus": "Containerization, automated testing, and CI/CD deployment pipelines.",
+                "topics": ["Docker & CI/CD Pipelines", "Automated Testing Suite", "Cloud Deployment (AWS/Vercel)", "Performance Audit"]
+            },
+            {
+                "phase_id": 4,
+                "title": "Capstone Portfolio & Technical Interviews",
+                "duration": "Weeks 11-12",
+                "focus": "Ship flagship portfolio project and excel at coding & system design interviews.",
+                "topics": ["Flagship Capstone Project", "System Design Mock Interviews", "LeetCode & Algorithmic Practice", "Resume & Portfolio Polish"]
+            }
+        ]
+    },
+    "general": {
+        "structure_name": "Professional Mastery & Career Track",
+        "phases": [
+            {
+                "phase_id": 1,
+                "title": "Foundations & Prerequisites",
+                "duration": "Phase 1 (Initial 25%)",
+                "focus": "Establish strong foundational knowledge, industry tools, and core principles.",
+                "topics": ["Core Principles & Terminology", "Key Industry Software & Tools", "Standards & Best Practices", "Fundamental Exercises"]
+            },
+            {
+                "phase_id": 2,
+                "title": "Core Competencies & Intermediate Skill Building",
+                "duration": "Phase 2 (35% Duration)",
+                "focus": "Deepen technical and domain expertise through guided practical modules.",
+                "topics": ["Intermediate Domain Theory", "Practical Case Studies", "Workflow & Execution Methods", "Applied Skills Labs"]
+            },
+            {
+                "phase_id": 3,
+                "title": "Advanced Applications & Industry Experience",
+                "duration": "Phase 3 (25% Duration)",
+                "focus": "Real-world projects, internships, or simulations adhering to professional standards.",
+                "topics": ["Real-World Projects / Case Audits", "Industry Compliance & Ethics", "Specialized Advanced Tools", "Peer Review & Mentorship"]
+            },
+            {
+                "phase_id": 4,
+                "title": "Capstone Deliverable & Professional Career Launch",
+                "duration": "Phase 4 (Final 15%)",
+                "focus": "Complete flagship portfolio/examination and prepare for career placement.",
+                "topics": ["Flagship Capstone Deliverable / Examination", "Professional Credentials & Portfolio", "Interview Preparation & Networking", "Career Placement & Growth"]
+            }
+        ]
+    }
+}
+
+def detect_blueprint_key(role_name):
+    """Detect which structural blueprint best matches the target career role."""
+    r = role_name.lower()
+    if any(k in r for k in ["ca", "chartered accountant", "accounting", "auditor", "cma", "cs", "company secretary"]):
+        return "ca"
+    elif any(k in r for k in ["law", "lawyer", "advocate", "legal", "attorney", "barrister", "judge", "paralegal"]):
+        return "law"
+    elif any(k in r for k in ["doctor", "medicine", "medical", "physician", "surgeon", "dentist", "nurse", "healthcare", "mbbs", "pharma"]):
+        return "medical"
+    elif any(k in r for k in ["civil engineer", "mechanical engineer", "electrical engineer", "engineering", "architect", "robotics"]):
+        return "engineering"
+    elif any(k in r for k in ["software", "developer", "programmer", "web", "frontend", "backend", "full-stack", "full stack", "ai", "machine learning", "data scientist", "devops", "cloud", "cybersecurity"]):
+        return "software"
+    else:
+        return "general"
+
 def analyze_skill_gap(current_skills, target_role, experience_level):
-    """Calculate skill gap analysis: Strong, To Improve, Missing, Readiness %."""
+    """Calculate skill gap analysis across ANY career field."""
     current_set = set(s.strip() for s in current_skills if s.strip())
     
-    # Match role requirements or fallback to general tech baseline
-    req_skills = ROLE_REQUIREMENTS.get(target_role, [
-        "Core Fundamentals", "Language Proficiency", "Web APIs", "Databases", "Version Control (Git)",
-        "System Design", "Testing", "Deployment & CI/CD"
-    ])
+    # Try finding exact matching taxonomy or category
+    matched_reqs = []
+    for category, skills_list in CAREER_TAXONOMIES.items():
+        if any(w in target_role.lower() for w in category.lower().split()):
+            matched_reqs = skills_list
+            break
 
-    req_set = set(req_skills)
+    if not matched_reqs:
+        # Fallback keyword matching across all taxonomies
+        for category, skills_list in CAREER_TAXONOMIES.items():
+            for sk in skills_list:
+                if sk.lower() in target_role.lower() or target_role.lower() in category.lower():
+                    matched_reqs.append(sk)
+    
+    if not matched_reqs:
+        # Baseline generic professional requirements
+        matched_reqs = [
+            f"Core {target_role} Principles", "Domain Regulations & Standards",
+            "Professional Tools & Systems", "Practical Case Execution",
+            "Ethics & Industry Compliance", "Advanced Domain Specialization",
+            "Project & Client Management", "Certification & Accreditation"
+        ]
+
+    req_skills = matched_reqs[:12]
 
     strong = []
     improve = []
@@ -73,27 +360,25 @@ def analyze_skill_gap(current_skills, target_role, experience_level):
         else:
             missing.append(req)
 
-    # Any extra current skills not directly required are added to strong
     for curr in current_skills:
         if curr not in strong and curr not in improve and curr not in missing:
             strong.append(curr)
 
-    total_reqs = len(req_skills)
+    total_reqs = max(1, len(req_skills))
     matched_score = len(strong) * 1.0 + len(improve) * 0.5
     readiness_score = int(min(98, max(15, round((matched_score / total_reqs) * 100))))
     
-    # Adjust by experience level
     if experience_level == "Beginner" and readiness_score > 60:
-        readiness_score = max(40, readiness_score - 15)
+        readiness_score = max(35, readiness_score - 15)
     elif experience_level == "Advanced" and readiness_score < 80:
-        readiness_score = min(92, readiness_score + 15)
+        readiness_score = min(95, readiness_score + 15)
 
     summary = (
-        f"Based on your current skill set and target role as a {target_role}, "
-        f"you are currently estimated at {readiness_score}% job readiness. "
-        f"You possess strong foundations in {', '.join(strong[:3]) if strong else 'basic tools'}, "
-        f"and focusing on missing core areas like {', '.join(missing[:3]) if missing else 'advanced concepts'} "
-        f"will rapidly elevate your portfolio."
+        f"Based on your profile and target career as a {target_role}, "
+        f"your current estimated role readiness is {readiness_score}%. "
+        f"You demonstrate strengths in {', '.join(strong[:3]) if strong else 'initial fundamentals'}, "
+        f"and mastering key area requirements like {', '.join(missing[:3]) if missing else 'advanced concepts'} "
+        f"will accelerate your professional qualification and placement."
     )
 
     return {
@@ -105,8 +390,8 @@ def analyze_skill_gap(current_skills, target_role, experience_level):
     }
 
 def generate_roadmap(user_profile, skill_gap):
-    """Generate a structured multi-phase learning roadmap."""
-    target_role = user_profile.get("target_role", "Software Engineer")
+    """Generate dynamic multi-career roadmaps using domain blueprints & LLM/Heuristic engine."""
+    target_role = user_profile.get("target_role", "Professional")
     duration_weeks = user_profile.get("duration_weeks", 12)
     hours_per_week = user_profile.get("hours_per_week", 10)
     exp_level = user_profile.get("experience_level", "Intermediate")
@@ -114,50 +399,56 @@ def generate_roadmap(user_profile, skill_gap):
     improve_skills = skill_gap.get("improve_skills", [])
     strong_skills = skill_gap.get("strong_skills", [])
 
-    # Try Gemini LLM if key is configured
+    blueprint_key = detect_blueprint_key(target_role)
+    blueprint = CAREER_BLUEPRINTS.get(blueprint_key, CAREER_BLUEPRINTS["general"])
+
+    # Try Gemini LLM if key is available
     if GEMINI_API_KEY:
         try:
             model = genai.GenerativeModel('gemini-1.5-flash')
             prompt = f"""
-You are an expert tech career mentor. Generate a detailed, highly actionable, personalized learning roadmap for a user aiming to become a {target_role}.
+You are an expert career mentor across all industries (Tech, Finance, Law, Medicine, CA/Accounting, Engineering, Marketing, Design, etc.).
+Generate a detailed, highly actionable, personalized learning roadmap for a user aiming to become a {target_role}.
 
-User Context:
+User Profile:
+- Target Role: {target_role}
 - Experience Level: {exp_level}
 - Hours Available Per Week: {hours_per_week} hours
-- Target Duration: {duration_weeks} weeks
-- Strong Skills: {', '.join(strong_skills)}
+- Duration: {duration_weeks} weeks
+- Existing Strong Skills: {', '.join(strong_skills)}
 - Skills to Improve: {', '.join(improve_skills)}
 - Missing Skills to Master: {', '.join(missing_skills)}
 
+Notice: Adapt the roadmap structure specifically for {target_role}. For example, if it is CA, include Articleship/Exams; if Law, include Bar Exam/Internships; if Doctor, include Clinical Rotations; if Software, include Projects/DSA.
+
 Return ONLY a valid JSON object matching this EXACT schema:
 {{
-  "title": "{target_role} Mastery Roadmap",
-  "overview": "High-level strategic plan tailored to your profile...",
+  "title": "{target_role} Professional Roadmap",
+  "overview": "High-level strategic career progression tailored for {target_role}...",
   "total_weeks": {duration_weeks},
   "phases": [
     {{
       "phase_id": 1,
       "title": "Phase 1 Title",
-      "duration": "Weeks 1-3 (3 Weeks)",
+      "duration": "Phase 1 Duration",
       "focus": "Core focus of this phase",
       "topics": ["Topic 1", "Topic 2", "Topic 3"],
       "tasks": [
-        {{"id": "p1_t1", "title": "Task title", "description": "Short action item"}},
-        {{"id": "p1_t2", "title": "Task title 2", "description": "Short action item"}}
+        {{"id": "p1_t1", "title": "Task title", "description": "Action item description"}},
+        {{"id": "p1_t2", "title": "Task title 2", "description": "Action item description"}}
       ],
       "project": {{
-        "title": "Hands-on Project Name",
-        "description": "Clear description of real-world mini project",
+        "title": "Hands-on Project / Case / Clinical Rotation Name",
+        "description": "Description of real-world milestone or practical project",
         "deliverables": ["Deliverable 1", "Deliverable 2"]
       }},
       "resources": [
-        {{"name": "Resource Title", "type": "Documentation/Course", "url": "https://example.com"}}
+        {{"name": "Resource Title", "type": "Documentation/Course/Book", "url": "https://example.com"}}
       ]
     }}
   ]
 }}
-Ensure exactly 4 logical phases spanning the requested total duration ({duration_weeks} weeks).
-Do NOT include markdown formatting backticks outside the JSON.
+Ensure exactly 4 logical phases matching the profession's real-world path. No markdown ticks outside JSON.
 """
             response = model.generate_content(prompt)
             clean_text = response.text.strip()
@@ -169,123 +460,197 @@ Do NOT include markdown formatting backticks outside the JSON.
             roadmap_json = json.loads(clean_text)
             return roadmap_json
         except Exception as e:
-            print(f"Gemini generation fallback due to: {e}")
+            print(f"Gemini LLM fallback: {e}")
 
-    # Deterministic Heuristic AI Generator (Fallback)
-    p1_weeks = max(1, round(duration_weeks * 0.25))
-    p2_weeks = max(1, round(duration_weeks * 0.35))
-    p3_weeks = max(1, round(duration_weeks * 0.25))
-    p4_weeks = max(1, duration_weeks - (p1_weeks + p2_weeks + p3_weeks))
-
-    primary_focus = missing_skills[:2] if missing_skills else ["Core Architecture", "Advanced Tools"]
-    secondary_focus = missing_skills[2:5] if len(missing_skills) > 2 else ["Best Practices", "Testing & Performance"]
-
-    phases = [
-        {
-            "phase_id": 1,
-            "title": f"Foundations & Essential Prerequisites",
-            "duration": f"Weeks 1-{p1_weeks} ({p1_weeks} {'Week' if p1_weeks == 1 else 'Weeks'})",
-            "focus": f"Strengthen core fundamentals in {', '.join(strong_skills[:2]) if strong_skills else 'programming'} and bridge initial gaps.",
-            "topics": [
-                f"Core Principles of {target_role}",
-                f"Modern Setup & Workflow Optimization",
-                f"Fundamentals of {improve_skills[0] if improve_skills else 'Version Control & CLI'}"
-            ],
+    # Heuristic Domain Blueprint Generator
+    bp_phases = blueprint["phases"]
+    primary_focus = missing_skills[:2] if missing_skills else ["Core Principles", "Industry Practice"]
+    
+    phases = []
+    for idx, bp in enumerate(bp_phases):
+        p_num = idx + 1
+        phases.append({
+            "phase_id": p_num,
+            "title": bp["title"],
+            "duration": bp["duration"],
+            "focus": bp["focus"],
+            "topics": bp["topics"],
             "tasks": [
-                {"id": "p1_t1", "title": "Setup local development environment", "description": "Configure IDE, version control git, and essential linting tools."},
-                {"id": "p1_t2", "title": f"Build foundation exercise in {improve_skills[0] if improve_skills else 'Core Language'}", "description": "Complete 5 hands-on practice problems targeting foundational concepts."},
-                {"id": "p1_t3", "title": "Implement clean code patterns", "description": "Refactor initial script to follow industry standard code style."}
+                {
+                    "id": f"p{p_num}_t1",
+                    "title": f"Study {bp['topics'][0] if bp['topics'] else 'Core Subject'} & Fundamentals",
+                    "description": f"Review standard textbooks, regulations, or documentation for {bp['topics'][0] if bp['topics'] else 'domain basics'}."
+                },
+                {
+                    "id": f"p{p_num}_t2",
+                    "title": f"Execute Practical Exercises & Case Studies",
+                    "description": f"Complete hands-on assignments targeting {primary_focus[0]} in {target_role}."
+                },
+                {
+                    "id": f"p{p_num}_t3",
+                    "title": "Review Quality & Compliance Standards",
+                    "description": "Perform self-audit against industry standards, legal compliance, or code ethics."
+                }
             ],
             "project": {
-                "title": f"{target_role} Utility Starter",
-                "description": f"Build a practical baseline application utilizing {strong_skills[0] if strong_skills else 'core skills'} demonstrating solid architecture.",
-                "deliverables": ["Clean Git repository with documentation", "Functional core feature", "Unit test suite"]
+                "title": f"{target_role} Phase {p_num} Practical Milestone",
+                "description": f"Deliver a practical milestone (case analysis, design project, articleship audit, or capstone) for {target_role}.",
+                "deliverables": ["Comprehensive documentation report", "Practical demonstration artifact", "Evaluation & presentation"]
             },
             "resources": [
-                {"name": "Official Documentation", "type": "Documentation", "url": "https://developer.mozilla.org/"},
-                {"name": "Interactive Fundamentals Guide", "type": "Interactive Course", "url": "https://freecodecamp.org"}
+                {"name": f"Official {target_role} Professional Reference Guide", "type": "Reference Guide", "url": "https://wikipedia.org"},
+                {"name": "Industry Best Practices Handbook", "type": "Handbook", "url": "https://coursera.org"}
             ]
-        },
-        {
-            "phase_id": 2,
-            "title": f"Core Skill Gaps Mastery",
-            "duration": f"Weeks {p1_weeks+1}-{p1_weeks+p2_weeks} ({p2_weeks} Weeks)",
-            "focus": f"Deep dive into critical missing competencies: {', '.join(primary_focus)}.",
-            "topics": [
-                f"In-depth {primary_focus[0]} Implementation",
-                f"Integration of {primary_focus[1] if len(primary_focus) > 1 else 'Data Layer & APIs'}",
-                "State Management & System Architecture"
-            ],
-            "tasks": [
-                {"id": "p2_t1", "title": f"Master key concepts of {primary_focus[0]}", "description": "Study core architecture and implement 3 mini-modules."},
-                {"id": "p2_t2", "title": "API & Data integration", "description": "Design and consume REST/GraphQL endpoints with error handling."},
-                {"id": "p2_t3", "title": "State & Data Persistence", "description": "Connect application logic to SQLite/PostgreSQL persistent store."}
-            ],
-            "project": {
-                "title": f"Full-Feature {target_role} Module",
-                "description": f"Develop an end-to-end service/app combining {primary_focus[0]} with real-time data.",
-                "deliverables": ["Working application", "RESTful API / Interface integration", "Database migrations & seed script"]
-            },
-            "resources": [
-                {"name": f"{primary_focus[0]} Deep Dive Guide", "type": "Tutorial", "url": "https://dev.to"},
-                {"name": "Modern System Patterns", "type": "Guide", "url": "https://roadmap.sh"}
-            ]
-        },
-        {
-            "phase_id": 3,
-            "title": "Advanced Engineering & Production Optimization",
-            "duration": f"Weeks {p1_weeks+p2_weeks+1}-{p1_weeks+p2_weeks+p3_weeks} ({p3_weeks} Weeks)",
-            "focus": f"Elevate code quality, testing, performance, and deployment automation.",
-            "topics": [
-                f"Advanced {secondary_focus[0] if secondary_focus else 'Optimization'}",
-                "Automated Testing (Unit, Integration, End-to-End)",
-                "CI/CD Pipelines & Containerization (Docker)"
-            ],
-            "tasks": [
-                {"id": "p3_t1", "title": "Containerize application with Docker", "description": "Write multi-stage Dockerfile and docker-compose configuration."},
-                {"id": "p3_t2", "title": "Build automated CI/CD pipeline", "description": "Configure GitHub Actions workflow for linting, testing, and building."},
-                {"id": "p3_t3", "title": "Performance benchmarking & audit", "description": "Optimize response latency, memory footprint, and rendering pipeline."}
-            ],
-            "project": {
-                "title": "Production Ready SaaS Feature",
-                "description": "Deploy a containerized production application with full CI/CD automation and analytics.",
-                "deliverables": ["Container image artifact", "Passing CI/CD pipeline", "Performance audit report"]
-            },
-            "resources": [
-                {"name": "Docker & DevOps Handbook", "type": "Documentation", "url": "https://docs.docker.com"},
-                {"name": "Production Deployment Guide", "type": "Course", "url": "https://coursera.org"}
-            ]
-        },
-        {
-            "phase_id": 4,
-            "title": "Capstone Portfolio & Interview Readiness",
-            "duration": f"Weeks {p1_weeks+p2_weeks+p3_weeks+1}-{duration_weeks} ({p4_weeks} {'Week' if p4_weeks == 1 else 'Weeks'})",
-            "focus": f"Build flagship Capstone Project for {target_role} position and polish technical interview readiness.",
-            "topics": [
-                f"Flagship Capstone System Design",
-                "System Architecture & Security Audit",
-                "Technical Interview Preparation & Behavioral Polish"
-            ],
-            "tasks": [
-                {"id": "p4_t1", "title": "Complete Flagship Capstone Application", "description": "Integrate all phase learnings into a comprehensive portfolio project."},
-                {"id": "p4_t2", "title": "Publish live demo & README documentation", "description": "Deploy to Vercel/Render/AWS with architecture diagrams and live demo link."},
-                {"id": "p4_t3", "title": "Mock Technical Interview Practice", "description": "Practice system design questions and algorithm problem solving."}
-            ],
-            "project": {
-                "title": f"Flagship {target_role} Capstone System",
-                "description": f"Comprehensive enterprise-grade application showcasing complete mastery of {target_role} requirements.",
-                "deliverables": ["Live public deployment link", "Comprehensive GitHub Repository", "Architecture diagram & documentation"]
-            },
-            "resources": [
-                {"name": "System Design Primer", "type": "GitHub Repo", "url": "https://github.com/donnemartin/system-design-primer"},
-                {"name": "Tech Interview Handbook", "type": "Guide", "url": "https://techinterviewhandbook.org"}
-            ]
-        }
-    ]
+        })
 
     return {
         "title": f"Personalized {target_role} Career Roadmap",
-        "overview": f"A comprehensive {duration_weeks}-week strategic plan tailored for {exp_level} level ({hours_per_week} hrs/week). Focuses on bridging missing competencies ({', '.join(missing_skills[:3]) if missing_skills else 'core skills'}) through structured phases, real-world capstone projects, and curated industry resources.",
+        "overview": f"A dynamic {duration_weeks}-week roadmap tailored for {target_role} ({exp_level} level, {hours_per_week} hrs/wk). Structured around standard {blueprint['structure_name']} guidelines to bridge skill gaps.",
         "total_weeks": duration_weeks,
         "phases": phases
+    }
+
+# -------------------------------------------------------------------
+# FEATURE 2: CAREER EXPLORER
+# -------------------------------------------------------------------
+
+CAREER_DATABASE = [
+    {
+        "role": "Data Scientist",
+        "category": "Data & AI",
+        "keywords": ["math", "mathematics", "computer", "computers", "problem solving", "python", "data", "statistics", "analytics", "ai"],
+        "why": "Recommended because you enjoy mathematics, computers, and analytical problem solving.",
+        "key_skills": ["Python", "SQL", "Machine Learning", "Statistics"],
+        "salary_range": "$95,000 - $160,000 / yr"
+    },
+    {
+        "role": "Software Engineer",
+        "category": "Software & IT",
+        "keywords": ["computer", "coding", "programming", "problem solving", "logic", "software", "building apps", "math"],
+        "why": "Recommended because of your interest in programming, software architecture, and logical problem solving.",
+        "key_skills": ["JavaScript", "Python", "Data Structures", "Web Development"],
+        "salary_range": "$90,000 - $155,000 / yr"
+    },
+    {
+        "role": "Quantitative Analyst (Quant)",
+        "category": "Finance & Analytics",
+        "keywords": ["mathematics", "math", "finance", "stocks", "trading", "computers", "algorithms", "problem solving", "statistics"],
+        "why": "Recommended because you excel at combining advanced mathematics, financial modeling, and computer algorithms.",
+        "key_skills": ["Financial Mathematics", "Python/C++", "Stochastic Calculus", "Risk Modeling"],
+        "salary_range": "$120,000 - $220,000 / yr"
+    },
+    {
+        "role": "Chartered Accountant (CA)",
+        "category": "Accounting & Finance",
+        "keywords": ["accounting", "finance", "taxes", "numbers", "auditing", "business", "law", "math", "money"],
+        "why": "Recommended because you have strong aptitude for numbers, financial compliance, auditing, and business laws.",
+        "key_skills": ["Financial Accounting", "Taxation", "Auditing", "Corporate Law"],
+        "salary_range": "$80,000 - $140,000 / yr"
+    },
+    {
+        "role": "Corporate Lawyer / Advocate",
+        "category": "Law & Legal",
+        "keywords": ["law", "justice", "reading", "writing", "arguments", "debate", "contracts", "business", "legal", "investigation"],
+        "why": "Recommended because you enjoy analytical reasoning, legal research, structured arguments, and corporate contracts.",
+        "key_skills": ["Constitutional Law", "Corporate Contracts", "Legal Research", "Drafting"],
+        "salary_range": "$85,000 - $175,000 / yr"
+    },
+    {
+        "role": "Medical Doctor / Physician",
+        "category": "Medicine & Healthcare",
+        "keywords": ["biology", "science", "helping people", "health", "hospital", "medicine", "human body", "care", "anatomy"],
+        "why": "Recommended because of your passion for biological sciences, human health, and clinical patient care.",
+        "key_skills": ["Anatomy & Physiology", "Clinical Diagnostics", "Pathology", "Patient Care"],
+        "salary_range": "$110,000 - $250,000 / yr"
+    },
+    {
+        "role": "Civil / Structural Engineer",
+        "category": "Engineering",
+        "keywords": ["building", "construction", "physics", "math", "design", "structures", "cad", "architecture", "infrastructure"],
+        "why": "Recommended because you enjoy applying physics and mathematics to design physical infrastructure and buildings.",
+        "key_skills": ["Structural Analysis", "AutoCAD", "Site Management", "Materials Engineering"],
+        "salary_range": "$75,000 - $130,000 / yr"
+    },
+    {
+        "role": "Digital Marketing Strategist",
+        "category": "Marketing & Media",
+        "keywords": ["marketing", "social media", "creativity", "writing", "analytics", "business", "advertising", "seo", "branding"],
+        "why": "Recommended because you blend creative storytelling with analytical audience insights and brand strategy.",
+        "key_skills": ["SEO/SEM", "Content Strategy", "Google Analytics", "Social Media Ads"],
+        "salary_range": "$65,000 - $115,000 / yr"
+    },
+    {
+        "role": "UI/UX Product Designer",
+        "category": "Design & Product",
+        "keywords": ["design", "art", "drawing", "creativity", "user interface", "apps", "figma", "psychology", "web design"],
+        "why": "Recommended because you enjoy visual creativity, user psychology, and crafting intuitive app interfaces.",
+        "key_skills": ["Figma", "User Research", "Wireframing", "Prototyping"],
+        "salary_range": "$80,000 - $140,000 / yr"
+    },
+    {
+        "role": "Management Consultant / MBA",
+        "category": "Business & Strategy",
+        "keywords": ["management", "business", "strategy", "leadership", "problem solving", "presentation", "case studies", "analytics"],
+        "why": "Recommended because of your strategic mindset, leadership skills, and drive to solve complex business challenges.",
+        "key_skills": ["Business Strategy", "Financial Analysis", "Operations", "Client Presentation"],
+        "salary_range": "$105,000 - $190,000 / yr"
+    },
+    {
+        "role": "Cybersecurity Specialist",
+        "category": "IT & Security",
+        "keywords": ["hacking", "security", "computers", "networking", "privacy", "defense", "investigation", "linux", "coding"],
+        "why": "Recommended because you like computer systems, ethical hacking, and defending digital infrastructure from cyber threats.",
+        "key_skills": ["Network Security", "Penetration Testing", "Linux", "Cryptography"],
+        "salary_range": "$90,000 - $165,000 / yr"
+    },
+    {
+        "role": "Biotechnology Researcher",
+        "category": "Biotech & Science",
+        "keywords": ["biology", "chemistry", "lab", "genetics", "research", "science", "medicine", "experiments", "dna"],
+        "why": "Recommended because of your curiosity for molecular biology, lab experimentation, and genetic research.",
+        "key_skills": ["Genomics", "Cell Culture", "Bioinformatics", "Lab Research"],
+        "salary_range": "$70,000 - $135,000 / yr"
+    }
+]
+
+def explore_careers(user_input_text):
+    """Analyze user interests, favorite subjects, strengths & preferences to recommend 4-5 suitable careers."""
+    text_lower = user_input_text.lower()
+
+    scored_careers = []
+    for c in CAREER_DATABASE:
+        score = 0
+        matched_words = []
+        for kw in c["keywords"]:
+            if kw in text_lower:
+                score += 2
+                matched_words.append(kw)
+        
+        # Base fallback score if query is broad
+        if score == 0:
+            score = 1
+
+        scored_careers.append({
+            "role": c["role"],
+            "category": c["category"],
+            "score": score,
+            "matched_words": matched_words,
+            "why": c["why"],
+            "key_skills": c["key_skills"],
+            "salary_range": c["salary_range"]
+        })
+
+    # Sort by highest score match
+    scored_careers.sort(key=lambda x: x["score"], reverse=True)
+    top_recommendations = scored_careers[:5]
+
+    # Dynamically refine 'why' message if matched keywords present
+    for rec in top_recommendations:
+        if rec["matched_words"]:
+            words_str = ", ".join(list(set(rec["matched_words"]))[:3])
+            rec["why"] = f"Recommended because you expressed strong interest in {words_str} and related domain capabilities."
+
+    return {
+        "user_query": user_input_text,
+        "recommendations": top_recommendations
     }
