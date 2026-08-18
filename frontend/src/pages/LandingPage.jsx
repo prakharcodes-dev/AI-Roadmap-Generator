@@ -1,13 +1,13 @@
 import React from 'react';
-import { Sparkles, ArrowRight, Target, FileText, CheckCircle2, ShieldCheck, Layers, Award, BarChart } from 'lucide-react';
+import { Sparkles, ArrowRight, Target, FileText, CheckCircle2, ShieldCheck, Layers, Award, BarChart, Compass, Search } from 'lucide-react';
 
-export default function LandingPage({ onStartOnboarding }) {
+export default function LandingPage({ onStartOnboarding, onOpenExplorer }) {
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '4rem', padding: '1rem 0 3rem 0' }}>
       {/* Hero Section */}
-      <section style={{ textAlign: 'center', maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+      <section style={{ textAlign: 'center', maxWidth: '880px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
         <div className="badge badge-purple" style={{ padding: '0.4rem 1.1rem', fontSize: '0.85rem' }}>
-          <Sparkles size={14} /> AI-Powered Career Architect — Phase 1 Engine
+          <Sparkles size={14} /> Multi-Career AI Learning Roadmap Platform
         </div>
 
         <h1 style={{
@@ -19,11 +19,11 @@ export default function LandingPage({ onStartOnboarding }) {
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          Transform Your Career Goals Into An <span style={{ background: 'linear-gradient(135deg, #A855F7 0%, #3B82F6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Actionable AI Roadmap</span>
+          Personalized AI Roadmaps for <span style={{ background: 'linear-gradient(135deg, #A855F7 0%, #3B82F6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Any Career Field</span>
         </h1>
 
-        <p style={{ fontSize: '1.15rem', color: '#94A3B8', maxWidth: '680px', lineHeight: 1.6 }}>
-          Stop guessing what to learn next. Upload your resume or select your skills, set your target role, and let our AI analyze your skill gap to generate a personalized step-by-step learning roadmap.
+        <p style={{ fontSize: '1.15rem', color: '#94A3B8', maxWidth: '720px', lineHeight: 1.6 }}>
+          Whether you aspire to be a Chartered Accountant, Lawyer, Software Engineer, Doctor, Quantitative Analyst, Civil Engineer, or Marketer — PathAI generates tailored domain-appropriate roadmaps, articleship/clinical structures, and task checklists.
         </p>
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -32,101 +32,106 @@ export default function LandingPage({ onStartOnboarding }) {
             onClick={onStartOnboarding}
             style={{ padding: '1rem 2.2rem', fontSize: '1.05rem', borderRadius: '14px' }}
           >
-            Generate My Roadmap <ArrowRight size={20} />
+            Generate My Career Roadmap <ArrowRight size={20} />
+          </button>
+
+          <button 
+            className="btn-secondary" 
+            onClick={onOpenExplorer}
+            style={{ padding: '1rem 2rem', fontSize: '1.05rem', borderRadius: '14px' }}
+          >
+            <Search size={20} color="#C084FC" /> Explore Careers
           </button>
         </div>
 
         {/* Feature Badges Bar */}
         <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1.5rem', flexWrap: 'wrap', justifyContent: 'center', color: '#64748B', fontSize: '0.88rem' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><ShieldCheck size={16} color="#10B981" /> PDF Resume Extraction</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><CheckCircle2 size={16} color="#3B82F6" /> Job Readiness Score</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Award size={16} color="#8B5CF6" /> Real-World Projects</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><ShieldCheck size={16} color="#10B981" /> 20+ Career Domains</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><CheckCircle2 size={16} color="#3B82F6" /> Profession-Specific Roadmaps</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Award size={16} color="#8B5CF6" /> AI Career Explorer</span>
         </div>
       </section>
 
-      {/* Main Flow Overview Cards */}
+      {/* Undecided Career Banner */}
+      <section className="glass-card" style={{
+        padding: '2rem 2.5rem',
+        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)',
+        border: '1px solid rgba(139, 92, 246, 0.3)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '1.5rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 25px rgba(139, 92, 246, 0.5)' }}>
+            <Compass size={28} color="#FFF" />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#FFF' }}>Not Sure Which Career to Pursue?</h3>
+            <p style={{ color: '#CBD5E1', fontSize: '0.95rem', marginTop: '0.2rem' }}>
+              Input your interests, favorite subjects, and strengths to get AI-recommended careers with matching rationales.
+            </p>
+          </div>
+        </div>
+
+        <button className="btn-primary" onClick={onOpenExplorer} style={{ padding: '0.85rem 1.6rem' }}>
+          Try Career Explorer <Search size={18} />
+        </button>
+      </section>
+
+      {/* Supported Career Fields Pill Grid */}
+      <section style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#E2E8F0' }}>Supported Professional Fields</h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', justifyContent: 'center' }}>
+          {[
+            "💻 Software & ML", "📊 Data Analytics", "💰 Finance & Investment", "🧾 CA / CS / CMA",
+            "⚖️ Law & Legal", "🩺 Medicine & Healthcare", "🏗️ Civil / Mech Engineering", "🧪 Science & Research",
+            "📈 Business & MBA", "🎨 UI/UX & Graphic Design", "📢 Digital Marketing", "✍️ Media & Journalism",
+            "👨‍🏫 Teaching & Education", "🏛️ Government / Civil Services", "🔬 Biotechnology", "🌐 Cybersecurity"
+          ].map((field, idx) => (
+            <span key={idx} className="badge badge-purple" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+              {field}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* Main Flow Cards */}
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(139, 92, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FileText size={24} color="#C084FC" />
+            <Search size={24} color="#C084FC" />
           </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>1. Profile & Resume</h3>
-          <p style={{ color: '#94A3B8', fontSize: '0.92rem' }}>Input your target role, hours per week, and drag-and-drop your resume PDF for instant automated skill detection.</p>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>1. Career Discovery</h3>
+          <p style={{ color: '#94A3B8', fontSize: '0.92rem' }}>Discover suitable career recommendations tailored to your favorite subjects, interests, and natural strengths.</p>
         </div>
 
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Target size={24} color="#60A5FA" />
           </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>2. AI Skill-Gap Analysis</h3>
-          <p style={{ color: '#94A3B8', fontSize: '0.92rem' }}>Receive an instant readiness percentage score and categorized breakdown of Strong, To Improve, and Missing skills.</p>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>2. Domain Skill-Gap Analysis</h3>
+          <p style={{ color: '#94A3B8', fontSize: '0.92rem' }}>Evaluate your current readiness score against statutory, practical, or technical requirements for your target role.</p>
         </div>
 
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Layers size={24} color="#34D399" />
           </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>3. Multi-Phase AI Roadmap</h3>
-          <p style={{ color: '#94A3B8', fontSize: '0.92rem' }}>Get a structured vertical roadmap complete with weekly topics, task checklists, hands-on capstones, and curated resources.</p>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>3. Tailored Roadmap Structure</h3>
+          <p style={{ color: '#94A3B8', fontSize: '0.92rem' }}>Receive a domain-appropriate progression roadmap (Articleship, Bar Exam, Clinical Rotations, CAD projects, or Software).</p>
         </div>
 
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(236, 72, 153, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <BarChart size={24} color="#F472B6" />
           </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>4. Live Progress Tracking</h3>
-          <p style={{ color: '#94A3B8', fontSize: '0.92rem' }}>Check off completed tasks, monitor your weekly velocity, track skill mastery growth, and stay motivated on your dashboard.</p>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>4. Real-Time Execution</h3>
+          <p style={{ color: '#94A3B8', fontSize: '0.92rem' }}>Mark off phase tasks, complete practical capstones, and track your job readiness growth on your dashboard.</p>
         </div>
       </section>
 
-      {/* Visual Roadmap Interactive Preview Card */}
-      <section className="glass-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2rem', background: 'linear-gradient(180deg, rgba(22, 27, 38, 0.9) 0%, rgba(15, 20, 31, 0.9) 100%)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <span className="badge badge-blue">Interactive Preview</span>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 700, marginTop: '0.4rem' }}>What Your AI Roadmap Looks Like</h2>
-          </div>
-          <button className="btn-primary" onClick={onStartOnboarding}>Build Yours Now <ArrowRight size={18} /></button>
-        </div>
-
-        {/* Demo Phase Item */}
-        <div style={{
-          background: 'rgba(11, 15, 23, 0.7)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
-          borderRadius: '16px',
-          padding: '1.5rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1rem'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#C084FC', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#8B5CF6', color: '#FFF', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>1</span>
-              Phase 1: Foundations & Core Skill Gaps
-            </h4>
-            <span className="badge badge-purple">Weeks 1-3 • 10 hrs/wk</span>
-          </div>
-
-          <p style={{ fontSize: '0.9rem', color: '#94A3B8' }}>Master core fundamental topics while filling critical prerequisite skill gaps identified by AI analysis.</p>
-
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <span className="badge badge-blue">Topics: React Hooks</span>
-            <span className="badge badge-blue">TypeScript Interfaces</span>
-            <span className="badge badge-blue">REST API Design</span>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(255, 255, 255, 0.03)', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-              <CheckCircle2 size={18} color="#10B981" />
-              <span style={{ fontSize: '0.88rem', textDecoration: 'line-through', color: '#64748B' }}>Configure development workspace & linting rules</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(255, 255, 255, 0.03)', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-              <CheckCircle2 size={18} color="#3B82F6" />
-              <span style={{ fontSize: '0.88rem', color: '#E2E8F0' }}>Build responsive component library with TypeScript</span>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

@@ -6,7 +6,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from database import init_db, get_db_connection
 from resume_parser import parse_resume
-from ai_engine import analyze_skill_gap, generate_roadmap
+from ai_engine import analyze_skill_gap, generate_roadmap, explore_careers
 
 FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'))
 
@@ -23,6 +23,17 @@ init_db()
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "ok", "message": "AI Roadmap Generator API is running"}), 200
+
+@app.route('/api/career-explorer', methods=['POST'])
+def career_explorer_endpoint():
+    data = request.json or {}
+    user_input = data.get("input_text", "")
+    
+    if not (user_input.strip() if isinstance(user_input, str) else ""):
+        user_input = "mathematics, computers, problem solving"
+
+    result = explore_careers(user_input)
+    return jsonify(result), 200
 
 @app.route('/api/resume/upload', methods=['POST'])
 def upload_resume():
