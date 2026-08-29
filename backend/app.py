@@ -388,6 +388,7 @@ def serve_frontend(path):
         return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     print(f"Serving frontend from: {FRONTEND_DIST}")
-    print("Starting AI Roadmap Generator Flask API on http://127.0.0.1:5000...")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    print(f"Starting AI Roadmap Generator Flask API on http://0.0.0.0:{port}...")
+    app.run(host='0.0.0.0', port=port, debug=False)
