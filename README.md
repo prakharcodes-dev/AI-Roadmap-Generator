@@ -74,6 +74,19 @@ An interactive AI career guidance tool for users who aren't sure which path to p
 
 ---
 
+## ⚡ React + Vite Frontend Infrastructure
+
+This application uses a high-performance React setup powered by Vite with HMR and Oxlint / SWC rules.
+
+### Official Plugins Used
+- [`@vitejs/plugin-react`](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) using [Oxc](https://oxc.rs/)
+- [`@vitejs/plugin-react-swc`](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) using [SWC](https://swc.rs/)
+
+### Oxlint & Build Setup
+For production deployments, type-aware lint rules and SWC/Oxc optimizations are enabled for fast bundle transformations and zero-lag rendering.
+
+---
+
 ## 📁 Project Directory Structure
 
 ```text
