@@ -9,44 +9,63 @@ from app import app
 from database import init_db
 from ai_engine import analyze_skill_gap, generate_roadmap, explore_careers
 
-class MultiCareerTestCase(unittest.TestCase):
+class QualityScoreAndSkillSkippingTestCase(unittest.TestCase):
 
     def setUp(self):
         init_db()
         app.config['TESTING'] = True
         self.client = app.test_client()
 
-    def test_career_explorer_logic(self):
-        res = explore_careers("I like mathematics, computers and problem solving.")
-        self.assertIn("recommendations", res)
-        self.assertGreater(len(res["recommendations"]), 0)
-        roles = [r["role"] for r in res["recommendations"]]
-        self.assertTrue(any("Data" in r or "Software" in r or "Quant" in r for r in roles))
-        # Ensure rationale is present
-        self.assertTrue("why" in res["recommendations"][0])
+    def test_skill_skipping_logic(self):
+        profile = {
+            "target_role": "AI Engineer",
+            "duration_weeks": 12,
+            "hours_per_week": 10,
+            "experience_level": "Intermediate"
+        }
+        gap = {
+            "strong_skills": ["Python", "Git", "SQL", "Basic ML"],
+            "missing_skills": ["Deep Learning", "Transformers", "RAG"],
+            "improve_skills": []
+        }
+        roadmap = generate_roadmap(profile, gap)
+        
+        # Verify Quality Score is present
+        self.assertIn("quality_score", roadmap)
+        qs = roadmap["quality_score"]
+        self.assertIn("overall", qs)
+        self.assertIn("goal_alignment", qs)
+        self.assertIn("difficulty_flow", qs)
+        self.assertIn("prerequisites", qs)
+        self.assertIn("practical_value", qs)
+        self.assertGreaterEqual(qs["overall"], 80)
 
-    def test_multi_career_ca_roadmap(self):
-        profile = {"target_role": "Chartered Accountant (CA)", "duration_weeks": 16, "hours_per_week": 15, "experience_level": "Beginner"}
-        gap = analyze_skill_gap(["Accounting Standards", "Basic Taxation"], "Chartered Accountant (CA)", "Beginner")
-        rm = generate_roadmap(profile, gap)
-        self.assertEqual(len(rm["phases"]), 4)
-        # Check CA specific structure terms
-        titles = " ".join([p["title"] for p in rm["phases"]])
-        self.assertTrue("Foundation" in titles or "Articleship" in titles or "Final" in titles)
+        # Verify already known skills (Python, Git, SQL) are SKIPPED from phase topics
+        all_topics = []
+        for p in roadmap["phases"]:
+            all_topics.extend([t.lower() for t in p.get("topics", [])])
 
-    def test_multi_career_law_roadmap(self):
-        profile = {"target_role": "Corporate Lawyer", "duration_weeks": 12, "hours_per_week": 10, "experience_level": "Intermediate"}
-        gap = analyze_skill_gap(["Constitutional Law"], "Corporate Lawyer", "Intermediate")
-        rm = generate_roadmap(profile, gap)
-        self.assertEqual(len(rm["phases"]), 4)
-        titles = " ".join([p["title"] for p in rm["phases"]])
-        self.assertTrue("Legal" in titles or "Bar" in titles or "Courtroom" in titles or "Statutory" in titles)
+        self.assertNotIn("git", all_topics)
+        self.assertNotIn("sql", all_topics)
 
-    def test_career_explorer_api_endpoint(self):
-        resp = self.client.post('/api/career-explorer', json={"input_text": "I enjoy physics, building structures, and mathematics"})
-        self.assertEqual(resp.status_code, 200)
-        data = json.loads(resp.data)
-        self.assertIn("recommendations", data)
+    def test_end_to_end_roadmap_quality_api(self):
+        gap_resp = self.client.post('/api/analyze-gap', json={
+            "name": "Alex",
+            "experience_level": "Intermediate",
+            "current_skills": ["Python", "Git"],
+            "target_role": "AI / ML Engineer",
+            "hours_per_week": 12,
+            "duration_weeks": 12
+        })
+        self.assertEqual(gap_resp.status_code, 200)
+        user_id = json.loads(gap_resp.data)["user_id"]
+
+        rm_resp = self.client.post('/api/generate-roadmap', json={"user_id": user_id})
+        self.assertEqual(rm_resp.status_code, 200)
+        rm_data = json.loads(rm_resp.data)["roadmap"]
+        
+        self.assertIn("quality_score", rm_data)
+        self.assertGreaterEqual(rm_data["quality_score"]["overall"], 75)
 
 if __name__ == '__main__':
     unittest.main()

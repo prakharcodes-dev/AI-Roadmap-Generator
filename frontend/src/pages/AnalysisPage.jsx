@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, CheckCircle2, AlertTriangle, XCircle, ArrowRight, ShieldCheck, Cpu, Lightbulb } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertTriangle, XCircle, ArrowRight, ShieldCheck, Cpu, Check, X, Info } from 'lucide-react';
 
 export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
   const [generating, setGenerating] = useState(false);
@@ -44,7 +44,7 @@ export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
       {/* Header */}
       <div style={{ textAlign: 'center' }}>
         <span className="badge badge-emerald" style={{ marginBottom: '0.5rem' }}>
-          <ShieldCheck size={14} /> Step 2 of 3: AI Skill-Gap Analysis Complete
+          <ShieldCheck size={14} /> Step 2 of 3: AI Skill-Gap Analysis & Personalization
         </span>
         <h1 style={{ fontSize: '2.4rem', fontWeight: 800 }}>Target Role Readiness Score</h1>
         <p style={{ color: '#94A3B8', fontSize: '1.05rem', marginTop: '0.2rem' }}>
@@ -97,100 +97,81 @@ export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
         {/* AI Strategic Advice */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#C084FC', fontWeight: 700, fontSize: '1.1rem' }}>
-            <Cpu size={20} /> AI Mentor Career Strategy
+            <Cpu size={20} /> AI Mentor Personalization Rule
           </div>
           <p style={{ color: '#E2E8F0', fontSize: '0.98rem', lineHeight: 1.6 }}>
             {skillGap.summary || "You possess a solid foundation! Focus on bridging critical missing competencies over your planned duration to achieve full role readiness."}
           </p>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#94A3B8' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981' }}></span>
-              {strong.length} Verified Strong Skills
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#94A3B8' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }}></span>
-              {improve.length} Skills to Deepen
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#94A3B8' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444' }}></span>
-              {missing.length} Missing Competencies
-            </div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            background: 'rgba(59, 130, 246, 0.12)',
+            border: '1px solid rgba(59, 130, 246, 0.25)',
+            fontSize: '0.85rem',
+            color: '#60A5FA'
+          }}>
+            <Info size={16} color="#3B82F6" />
+            <span><strong>Skill Skipping Active:</strong> The AI will skip topics you already know and tailor phases exclusively to unmastered skills.</span>
           </div>
         </div>
       </div>
 
-      {/* 3 Skill Category Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+      {/* EXPLICIT SKILL SKIPPING BREAKDOWN CARDS */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
         
-        {/* Strong Skills */}
-        <div className="glass-card" style={{ borderTop: '3px solid #10B981' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.2rem' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CheckCircle2 size={20} color="#34D399" />
+        {/* WHAT YOU ALREADY KNOW (WILL BE SKIPPED) */}
+        <div className="glass-card" style={{ borderTop: '3px solid #10B981', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Check size={20} color="#34D399" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#34D399' }}>What You Already Know</h3>
+                <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>✓ Skipped in generated roadmap</span>
+              </div>
             </div>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Strong Skills</h3>
-              <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Foundational mastery</span>
-            </div>
+            <span className="badge badge-emerald">{strong.length} Skills</span>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.4rem' }}>
             {strong.length === 0 ? (
-              <p style={{ fontSize: '0.85rem', color: '#64748B' }}>None identified yet.</p>
+              <p style={{ fontSize: '0.85rem', color: '#64748B' }}>No prior skills recorded.</p>
             ) : (
               strong.map(s => (
-                <span key={s} className="badge badge-emerald">
-                  <CheckCircle2 size={12} /> {s}
+                <span key={s} className="badge badge-emerald" style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}>
+                  ✓ {s}
                 </span>
               ))
             )}
           </div>
         </div>
 
-        {/* Skills to Improve */}
-        <div className="glass-card" style={{ borderTop: '3px solid #F59E0B' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.2rem' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <AlertTriangle size={20} color="#FBBF24" />
+        {/* WHAT YOU NEED TO LEARN (MAIN ROADMAP FOCUS) */}
+        <div className="glass-card" style={{ borderTop: '3px solid #EF4444', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <X size={20} color="#F87171" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#F87171' }}>What You Need to Learn</h3>
+                <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>✗ Primary focus of roadmap phases</span>
+              </div>
             </div>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Skills to Improve</h3>
-              <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Partial proficiency</span>
-            </div>
+            <span className="badge badge-rose">{missing.length} Skills</span>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {improve.length === 0 ? (
-              <p style={{ fontSize: '0.85rem', color: '#64748B' }}>No partial gaps.</p>
-            ) : (
-              improve.map(s => (
-                <span key={s} className="badge badge-amber">
-                  <AlertTriangle size={12} /> {s}
-                </span>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Missing Skills */}
-        <div className="glass-card" style={{ borderTop: '3px solid #EF4444' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.2rem' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <XCircle size={20} color="#F87171" />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Missing Skills</h3>
-              <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Critical for role</span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.4rem' }}>
             {missing.length === 0 ? (
               <p style={{ fontSize: '0.85rem', color: '#34D399' }}>All primary skills covered!</p>
             ) : (
               missing.map(s => (
-                <span key={s} className="badge badge-rose">
-                  <XCircle size={12} /> {s}
+                <span key={s} className="badge badge-rose" style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}>
+                  ✗ {s}
                 </span>
               ))
             )}
@@ -207,7 +188,7 @@ export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
           disabled={generating}
           style={{ padding: '1.1rem 2.5rem', fontSize: '1.1rem', borderRadius: '14px' }}
         >
-          {generating ? 'Generating AI Roadmap...' : 'Generate My AI Roadmap'} <ArrowRight size={20} />
+          {generating ? 'Generating Personalized AI Roadmap...' : 'Generate My AI Roadmap'} <ArrowRight size={20} />
         </button>
       </div>
 

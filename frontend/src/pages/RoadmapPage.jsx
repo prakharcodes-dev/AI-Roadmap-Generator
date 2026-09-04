@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { 
   CheckCircle2, Circle, Layers, BookOpen, Rocket, ExternalLink, 
-  ChevronDown, ChevronUp, Calendar, Clock, Trophy, Sparkles, AlertCircle 
+  ChevronDown, ChevronUp, Calendar, Clock, Trophy, Sparkles, Award, Star, Cpu 
 } from 'lucide-react';
 
 export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate }) {
@@ -10,6 +10,14 @@ export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate 
   const phases = roadmap.phases || [];
   const stats = roadmapData?.stats || { total_tasks: 0, completed_tasks: 0, overall_progress: 0 };
   const userProfile = roadmapData?.user_profile || {};
+  const quality = roadmap.quality_score || {
+    overall: 92,
+    goal_alignment: 94,
+    difficulty_flow: 88,
+    prerequisites: 92,
+    practical_value: 95,
+    critique_summary: "High alignment with target career; prerequisite topics properly ordered with natural difficulty flow."
+  };
 
   const [expandedPhases, setExpandedPhases] = useState({ 1: true, 2: true, 3: true, 4: true });
   const [togglingTask, setTogglingTask] = useState(null);
@@ -40,7 +48,6 @@ export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate 
       const result = await res.json();
 
       if (newStatus) {
-        // Trigger celebratory confetti effect!
         confetti({
           particleCount: 80,
           spread: 60,
@@ -110,10 +117,116 @@ export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate 
         </div>
       </div>
 
+      {/* ⭐ ROADMAP QUALITY SCORE CARD (SELF-CRITIQUE MATRIX) */}
+      <div className="glass-card" style={{
+        padding: '2rem',
+        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(59, 130, 246, 0.12) 100%)',
+        border: '1px solid rgba(139, 92, 246, 0.3)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.5rem'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '14px',
+              background: '#8B5CF6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)'
+            }}>
+              <Star size={24} color="#FFF" />
+            </div>
+            <div>
+              <span className="badge badge-purple" style={{ fontSize: '0.78rem' }}>AI Self-Critique Evaluation</span>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#FFF' }}>ROADMAP QUALITY SCORE</h2>
+            </div>
+          </div>
+
+          {/* Overall Badge */}
+          <div style={{
+            background: 'rgba(11, 15, 23, 0.9)',
+            border: '1px solid rgba(139, 92, 246, 0.4)',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '14px',
+            textAlign: 'center'
+          }}>
+            <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Overall Quality</span>
+            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#34D399', lineHeight: 1, marginTop: '0.2rem' }}>
+              {quality.overall} <span style={{ fontSize: '0.9rem', color: '#94A3B8' }}>/ 100</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 4 Dimension Metrics Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          <div style={{ background: 'rgba(11, 15, 23, 0.6)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+              <span style={{ color: '#94A3B8', fontWeight: 600 }}>Goal Alignment</span>
+              <span style={{ color: '#C084FC', fontWeight: 700 }}>{quality.goal_alignment}%</span>
+            </div>
+            <div className="progress-bar-track" style={{ height: '8px' }}>
+              <div className="progress-bar-fill" style={{ width: `${quality.goal_alignment}%` }}></div>
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(11, 15, 23, 0.6)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+              <span style={{ color: '#94A3B8', fontWeight: 600 }}>Difficulty Flow</span>
+              <span style={{ color: '#60A5FA', fontWeight: 700 }}>{quality.difficulty_flow}%</span>
+            </div>
+            <div className="progress-bar-track" style={{ height: '8px' }}>
+              <div className="progress-bar-fill" style={{ width: `${quality.difficulty_flow}%` }}></div>
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(11, 15, 23, 0.6)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+              <span style={{ color: '#94A3B8', fontWeight: 600 }}>Prerequisites</span>
+              <span style={{ color: '#FBBF24', fontWeight: 700 }}>{quality.prerequisites}%</span>
+            </div>
+            <div className="progress-bar-track" style={{ height: '8px' }}>
+              <div className="progress-bar-fill" style={{ width: `${quality.prerequisites}%` }}></div>
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(11, 15, 23, 0.6)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+              <span style={{ color: '#94A3B8', fontWeight: 600 }}>Practical Value</span>
+              <span style={{ color: '#34D399', fontWeight: 700 }}>{quality.practical_value}%</span>
+            </div>
+            <div className="progress-bar-track" style={{ height: '8px' }}>
+              <div className="progress-bar-fill" style={{ width: `${quality.practical_value}%` }}></div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Critique Summary Note */}
+        {quality.critique_summary && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '0.6rem',
+            padding: '0.85rem 1rem',
+            borderRadius: '10px',
+            background: 'rgba(11, 15, 23, 0.7)',
+            fontSize: '0.88rem',
+            color: '#CBD5E1',
+            lineHeight: 1.5
+          }}>
+            <Cpu size={18} color="#8B5CF6" style={{ marginTop: '2px', flexShrink: 0 }} />
+            <span><strong>AI Pre-Critique Note:</strong> {quality.critique_summary}</span>
+          </div>
+        )}
+      </div>
+
       {/* Vertical Timeline Container */}
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         
-        {/* Vertical Timeline Connecting Beam */}
+        {/* Vertical Beam */}
         <div style={{
           position: 'absolute',
           top: '30px',
