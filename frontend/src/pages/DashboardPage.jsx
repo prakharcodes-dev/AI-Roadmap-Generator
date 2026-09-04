@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { 
   BarChart3, CheckCircle2, Clock, ShieldCheck, Flame, ArrowRight, 
-  Layers, Sparkles, Trophy, Calendar, CheckSquare 
+  Layers, Sparkles, Trophy, Calendar, CheckSquare, Star 
 } from 'lucide-react';
 
 export default function DashboardPage({ activeUser, roadmapData, onProgressUpdate }) {
@@ -75,6 +75,7 @@ export default function DashboardPage({ activeUser, roadmapData, onProgressUpdat
   const nextTask = dashboard?.next_task;
   const phaseStats = dashboard?.phase_stats || [];
   const skills = dashboard?.skill_breakdown || {};
+  const qualityScore = roadmapData?.roadmap?.quality_score?.overall || 92;
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -92,8 +93,8 @@ export default function DashboardPage({ activeUser, roadmapData, onProgressUpdat
         </div>
       </div>
 
-      {/* Top Key Metrics Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+      {/* Top Key Metrics Cards Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
         
         {/* Metric 1: Overall Progress */}
         <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -119,21 +120,21 @@ export default function DashboardPage({ activeUser, roadmapData, onProgressUpdat
           </span>
         </div>
 
-        {/* Metric 3: Hours Spent */}
+        {/* Metric 3: Roadmap Quality Rating */}
         <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <span style={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase' }}>Time Invested</span>
+          <span style={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase' }}>Roadmap Quality Rating</span>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-            <span style={{ fontSize: '2.2rem', fontWeight: 800, color: '#FBBF24', lineHeight: 1 }}>{overview.hours_spent}</span>
-            <span style={{ fontSize: '0.85rem', color: '#94A3B8' }}>Hours</span>
+            <span style={{ fontSize: '2.2rem', fontWeight: 800, color: '#34D399', lineHeight: 1 }}>{qualityScore}</span>
+            <span style={{ fontSize: '0.85rem', color: '#34D399' }}>/ 100</span>
           </div>
-          <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '0.2rem' }}>Based on {profile.hours_per_week} hrs/wk pace</span>
+          <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '0.2rem' }}>AI Self-Critique Evaluation</span>
         </div>
 
         {/* Metric 4: Readiness Score Growth */}
         <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <span style={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase' }}>Role Readiness</span>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-            <span style={{ fontSize: '2.2rem', fontWeight: 800, color: '#34D399', lineHeight: 1 }}>{overview.current_readiness}%</span>
+            <span style={{ fontSize: '2.2rem', fontWeight: 800, color: '#FBBF24', lineHeight: 1 }}>{overview.current_readiness}%</span>
             <span style={{ fontSize: '0.82rem', color: '#10B981' }}>+{overview.current_readiness - overview.initial_readiness}% Growth</span>
           </div>
           <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '0.2rem' }}>Target: 100% Full Readiness</span>
@@ -219,33 +220,22 @@ export default function DashboardPage({ activeUser, roadmapData, onProgressUpdat
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <span style={{ fontSize: '0.82rem', color: '#34D399', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
-                Strong Mastery ({skills.strong?.length || 0} skills)
+                Verified Mastery (Skipped in Roadmap) ({skills.strong?.length || 0} skills)
               </span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                 {skills.strong?.map(s => (
-                  <span key={s} className="badge badge-emerald" style={{ fontSize: '0.78rem' }}>{s}</span>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <span style={{ fontSize: '0.82rem', color: '#FBBF24', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
-                Currently Developing ({skills.improve?.length || 0} skills)
-              </span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                {skills.improve?.map(s => (
-                  <span key={s} className="badge badge-amber" style={{ fontSize: '0.78rem' }}>{s}</span>
+                  <span key={s} className="badge badge-emerald" style={{ fontSize: '0.78rem' }}>✓ {s}</span>
                 ))}
               </div>
             </div>
 
             <div>
               <span style={{ fontSize: '0.82rem', color: '#F87171', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
-                Target Skills to Master ({skills.missing?.length || 0} skills)
+                Target Unmastered Skills to Master ({skills.missing?.length || 0} skills)
               </span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                 {skills.missing?.map(s => (
-                  <span key={s} className="badge badge-rose" style={{ fontSize: '0.78rem' }}>{s}</span>
+                  <span key={s} className="badge badge-rose" style={{ fontSize: '0.78rem' }}>✗ {s}</span>
                 ))}
               </div>
             </div>

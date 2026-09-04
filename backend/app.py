@@ -215,6 +215,17 @@ def get_roadmap_endpoint(user_id):
 
     overall_progress = int(round((completed_count / total_tasks_count * 100))) if total_tasks_count > 0 else 0
 
+    from ai_engine import calculate_roadmap_quality
+    user_prof = {
+        "target_role": user_row["target_role"],
+        "duration_weeks": user_row["duration_weeks"],
+        "hours_per_week": user_row["hours_per_week"],
+        "experience_level": user_row["experience_level"]
+    }
+    sg_missing = json.loads(gap_row["missing_skills"] or "[]") if gap_row else []
+    sg_strong = json.loads(gap_row["strong_skills"] or "[]") if gap_row else []
+    quality_score = calculate_roadmap_quality(user_row["target_role"], phases, sg_missing, sg_strong)
+
     return jsonify({
         "roadmap_id": roadmap_id,
         "user_id": user_id,
@@ -227,9 +238,9 @@ def get_roadmap_endpoint(user_id):
             "current_skills": json.loads(user_row["current_skills"] or "[]")
         },
         "skill_gap": {
-            "strong_skills": json.loads(gap_row["strong_skills"] or "[]") if gap_row else [],
+            "strong_skills": sg_strong,
             "improve_skills": json.loads(gap_row["improve_skills"] or "[]") if gap_row else [],
-            "missing_skills": json.loads(gap_row["missing_skills"] or "[]") if gap_row else [],
+            "missing_skills": sg_missing,
             "readiness_score": gap_row["readiness_score"] if gap_row else 50,
             "summary": gap_row["summary"] if gap_row else ""
         },
@@ -237,6 +248,7 @@ def get_roadmap_endpoint(user_id):
             "title": roadmap_row["title"],
             "overview": roadmap_row["overview"],
             "total_weeks": roadmap_row["total_weeks"],
+            "quality_score": quality_score,
             "phases": phases
         },
         "stats": {
