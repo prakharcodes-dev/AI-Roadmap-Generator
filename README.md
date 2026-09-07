@@ -1,5 +1,7 @@
 # PathAI — Multi-Career AI Learning Roadmap Platform
 
+🚀 **Live Demo:** [https://ai-roadmap-generator-v3y5.onrender.com]
+
 PathAI is a full-stack, AI-powered career guidance and learning roadmap platform. It analyzes user experience, current skills, target career roles, duration constraints, and uploaded PDF resumes to perform an AI Skill-Gap Analysis, generate domain-specific multi-phase learning roadmaps, and track progress in real-time.
 
 ---
