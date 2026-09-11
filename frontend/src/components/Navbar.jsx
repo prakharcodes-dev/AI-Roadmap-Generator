@@ -1,60 +1,62 @@
 import React from 'react';
-import { Sparkles, Map, BarChart3, Compass, CheckCircle2, UserCheck, Search } from 'lucide-react';
+import { Compass, Sparkles, Map, BarChart3, Home, PlusCircle } from 'lucide-react';
 
 export default function Navbar({ activePage, setActivePage, activeUser }) {
   const navItems = [
-    { id: 'landing', label: 'Home', icon: Compass },
-    { id: 'explorer', label: 'Career Explorer', icon: Search },
-    { id: 'onboarding', label: 'Onboarding', icon: UserCheck },
-    { id: 'analysis', label: 'Skill Gap', icon: Sparkles, disabled: !activeUser?.skill_gap },
+    { id: 'landing', label: 'Home', icon: Home },
+    { id: 'explorer', label: 'Explore Careers', icon: Compass },
+    { id: 'onboarding', label: 'Build Roadmap', icon: PlusCircle },
     { id: 'roadmap', label: 'My Roadmap', icon: Map, disabled: !activeUser?.roadmap_id },
-    { id: 'dashboard', label: 'Dashboard', icon: BarChart3, disabled: !activeUser?.roadmap_id },
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3, disabled: !activeUser?.user_id }
   ];
 
   return (
     <header style={{
-      position: 'sticky',
+      sticky: 'top',
       top: 0,
       zIndex: 50,
-      background: 'rgba(11, 15, 23, 0.85)',
       backdropFilter: 'blur(16px)',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+      WebkitBackdropFilter: 'blur(16px)',
+      background: 'rgba(9, 13, 22, 0.85)',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+      padding: '0.85rem 1.5rem'
     }}>
       <div style={{
-        maxWidth: '1280px',
+        maxWidth: '1240px',
         margin: '0 auto',
-        padding: '0.85rem 1.5rem',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
-        {/* Logo */}
+        {/* Brand Logo */}
         <div 
-          onClick={() => setActivePage('landing')}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
+          onClick={() => setActivePage('landing')} 
+          style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}
         >
           <div style={{
-            width: '40px',
-            height: '40px',
+            width: '38px',
+            height: '38px',
             borderRadius: '12px',
             background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(139, 92, 246, 0.4)'
+            boxShadow: '0 0 16px rgba(139, 92, 246, 0.4)'
           }}>
-            <Sparkles size={22} color="#FFFFFF" />
+            <Sparkles size={20} color="#FFF" />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.2rem', fontWeight: 800, background: 'linear-gradient(135deg, #FFFFFF 0%, #94A3B8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              PathAI <span style={{ color: '#8B5CF6', WebkitTextFillColor: '#8B5CF6' }}>Roadmap</span>
-            </h1>
-            <p style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 500, letterSpacing: '0.05em' }}>MULTI-CAREER PLATFORM</p>
+            <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#FFF' }}>
+              Path<span style={{ color: '#C084FC' }}>AI</span>
+            </span>
+            <span style={{ display: 'block', fontSize: '0.7rem', color: '#94A3B8', fontWeight: 500, marginTop: '-3px' }}>
+              Multi-Career Roadmap Platform
+            </span>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', gap: '0.4rem' }}>
+        {/* Center Nav Links */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activePage === item.id;
@@ -69,65 +71,34 @@ export default function Navbar({ activePage, setActivePage, activeUser }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.45rem',
-                  padding: '0.55rem 0.9rem',
+                  padding: '0.55rem 1rem',
                   borderRadius: '10px',
                   border: isActive ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid transparent',
-                  background: isActive ? 'rgba(139, 92, 246, 0.12)' : 'transparent',
-                  color: isActive ? '#C084FC' : (isDisabled ? '#475569' : '#94A3B8'),
-                  fontWeight: isActive ? 600 : 500,
-                  fontSize: '0.86rem',
+                  background: isActive ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                  color: isActive ? '#C084FC' : (isDisabled ? '#475569' : '#CBD5E1'),
+                  fontSize: '0.88rem',
+                  fontWeight: isActive ? 700 : 500,
                   cursor: isDisabled ? 'not-allowed' : 'pointer',
                   transition: 'all 0.2s ease',
-                  opacity: isDisabled ? 0.5 : 1
+                  opacity: isDisabled ? 0.4 : 1
                 }}
               >
-                <Icon size={15} />
+                <Icon size={16} color={isActive ? '#C084FC' : '#94A3B8'} />
                 <span>{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Profile Pill */}
+        {/* Right Call To Action */}
         <div>
-          {activeUser?.name ? (
-            <div 
-              onClick={() => setActivePage('dashboard')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.6rem',
-                padding: '0.4rem 0.85rem',
-                borderRadius: '9999px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                cursor: 'pointer'
-              }}
-            >
-              <div style={{
-                width: '26px',
-                height: '26px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.75rem',
-                fontWeight: 700
-              }}>
-                {activeUser.name.charAt(0).toUpperCase()}
-              </div>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#E2E8F0' }}>{activeUser.name}</span>
-            </div>
-          ) : (
-            <button 
-              className="btn-primary" 
-              onClick={() => setActivePage('explorer')}
-              style={{ padding: '0.55rem 1.1rem', fontSize: '0.85rem' }}
-            >
-              Career Explorer <Search size={14} />
-            </button>
-          )}
+          <button 
+            className="btn-primary" 
+            onClick={() => setActivePage('onboarding')}
+            style={{ padding: '0.6rem 1.1rem', fontSize: '0.85rem', borderRadius: '10px' }}
+          >
+            <PlusCircle size={16} /> Create Roadmap
+          </button>
         </div>
       </div>
     </header>
