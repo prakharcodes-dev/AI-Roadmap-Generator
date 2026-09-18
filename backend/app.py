@@ -61,13 +61,25 @@ def analyze_gap_endpoint():
     data = request.json or {}
 
     user_id = data.get("user_id", f"user_{uuid.uuid4().hex[:8]}")
-    name = data.get("name", "User")
-    experience_level = data.get("experience_level", "Intermediate")
+    name = str(data.get("name", "User")).strip() or "User"
+    experience_level = str(data.get("experience_level", "Intermediate")).strip()
     current_skills = data.get("current_skills", [])
-    target_role = data.get("target_role", "Full-Stack Developer")
-    hours_per_week = int(data.get("hours_per_week", 10))
-    duration_weeks = int(data.get("duration_weeks", 12))
-    resume_filename = data.get("resume_filename", "")
+    target_role = str(data.get("target_role", "Full-Stack Developer")).strip()
+    
+    if not target_role or len(target_role) < 2:
+        return jsonify({"error": "target_role must be a valid string of at least 2 characters"}), 400
+
+    try:
+        hours_per_week = max(1, min(80, int(data.get("hours_per_week", 10))))
+    except (ValueError, TypeError):
+        hours_per_week = 10
+
+    try:
+        duration_weeks = max(2, min(104, int(data.get("duration_weeks", 12))))
+    except (ValueError, TypeError):
+        duration_weeks = 12
+
+    resume_filename = str(data.get("resume_filename", "")).strip()
 
     # Perform analysis
     analysis_result = analyze_skill_gap(current_skills, target_role, experience_level)

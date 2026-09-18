@@ -17,8 +17,16 @@ export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
     return '#EF4444';
   };
 
+  const [statusMessage, setStatusMessage] = useState('');
+
   const handleGenerate = async () => {
     setGenerating(true);
+    setStatusMessage("⏳ Analyzing skill gap & skipping mastered skills...");
+
+    const timer1 = setTimeout(() => setStatusMessage("🧠 Structuring domain-specific learning phases & milestones..."), 600);
+    const timer2 = setTimeout(() => setStatusMessage("⭐ Evaluating AI Quality Score matrix (Goal Alignment & Flow)..."), 1200);
+    const timer3 = setTimeout(() => setStatusMessage("🚀 Finalizing your personalized career roadmap..."), 1800);
+
     try {
       const res = await fetch('http://127.0.0.1:5000/api/generate-roadmap', {
         method: 'POST',
@@ -34,7 +42,11 @@ export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
       console.error(err);
       alert("Error generating roadmap. Make sure backend is running on http://127.0.0.1:5000");
     } finally {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
       setGenerating(false);
+      setStatusMessage('');
     }
   };
 
@@ -181,14 +193,20 @@ export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
       </div>
 
       {/* Action Footer */}
-      <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+      <div style={{ textAlign: 'center', marginTop: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+        {generating && statusMessage && (
+          <div className="badge badge-purple pulse-glow" style={{ fontSize: '0.95rem', padding: '0.6rem 1.25rem' }}>
+            <Sparkles size={16} /> {statusMessage}
+          </div>
+        )}
+
         <button 
           className="btn-primary pulse-glow" 
           onClick={handleGenerate}
           disabled={generating}
           style={{ padding: '1.1rem 2.5rem', fontSize: '1.1rem', borderRadius: '14px' }}
         >
-          {generating ? 'Generating Personalized AI Roadmap...' : 'Generate My AI Roadmap'} <ArrowRight size={20} />
+          {generating ? 'Generating AI Roadmap...' : 'Generate My AI Roadmap'} <ArrowRight size={20} />
         </button>
       </div>
 

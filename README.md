@@ -52,6 +52,29 @@ An interactive AI career guidance tool for users who aren't sure which path to p
 
 ---
 
+## 🔄 Roadmap Generation Flow
+
+The end-to-end pipeline processes user profile data through 4 automated stages:
+
+```text
+┌───────────────────────────┐      ┌───────────────────────────┐
+│ 1. User Input & PDF Resume │ ───► │ 2. Skill-Gap & Skipping   │
+│ (Role, Skills, Duration)  │      │ (Known vs Missing Skills) │
+└───────────────────────────┘      └─────────────┬─────────────┘
+                                                 │
+┌───────────────────────────┐      ┌─────────────▼─────────────┐
+│ 4. Interactive Roadmap UI │ ◄─── │ 3. AI Generation & Score  │
+│ (Checklists, DB Sync)     │      │ (Phase Blueprints, Matrix)│
+└───────────────────────────┘      └───────────────────────────┘
+```
+
+1. **User Profile & Resume Input**: Collects target role, experience level, time commitment, and extracts skills from uploaded PDF resumes.
+2. **AI Skill-Gap & Skill Skipping**: Compares known skills against domain requirements, calculating readiness % and skipping mastered skills.
+3. **AI Generation & Self-Critique**: Structures 4 milestone phases with actionable tasks and evaluates a 4-dimension Roadmap Quality Score (Goal Alignment, Difficulty Flow, Prerequisites, Practical Value).
+4. **Interactive Timeline & DB Sync**: Saves roadmap to SQLite database (`roadmap_generator.db`) and renders vertical checklist timeline with task toggle sync.
+
+---
+
 ## 🏗️ System Architecture & Tech Stack
 
 ```text
