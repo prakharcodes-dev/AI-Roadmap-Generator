@@ -270,18 +270,24 @@ export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate 
               </div>
 
               {/* Phase Glass Card */}
-              <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div className="glass-card" style={{ 
+                padding: '2rem', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '1.5rem',
+                borderLeft: phasePercent === 100 ? '4px solid #10B981' : (phasePercent > 0 ? '4px solid #8B5CF6' : '1px solid var(--bg-card-border)')
+              }}>
                 
                 {/* Phase Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', cursor: 'pointer' }} onClick={() => togglePhaseExpand(phase.phase_id)}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                       <span className="badge badge-purple">{phase.duration}</span>
-                      <span style={{ fontSize: '0.85rem', color: phasePercent === 100 ? '#34D399' : '#94A3B8', fontWeight: 600 }}>
+                      <span className={`badge ${phasePercent === 100 ? 'badge-emerald' : 'badge-blue'}`}>
                         {phaseCompletedCount}/{phaseTasks.length} Tasks ({phasePercent}%)
                       </span>
                     </div>
-                    <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginTop: '0.3rem' }}>{phase.title}</h2>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginTop: '0.35rem' }}>{phase.title}</h2>
                   </div>
 
                   <button className="btn-secondary" style={{ padding: '0.4rem 0.8rem' }}>
@@ -321,10 +327,10 @@ export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate 
                             display: 'flex',
                             alignItems: 'flex-start',
                             gap: '0.85rem',
-                            padding: '1rem',
+                            padding: '1rem 1.2rem',
                             borderRadius: '12px',
                             background: task.is_completed ? 'rgba(16, 185, 129, 0.08)' : 'rgba(11, 15, 23, 0.6)',
-                            border: task.is_completed ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid var(--bg-card-border)',
+                            border: task.is_completed ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid var(--bg-card-border)',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease'
                           }}

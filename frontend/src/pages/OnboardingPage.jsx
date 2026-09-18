@@ -82,19 +82,24 @@ export default function OnboardingPage({ onCompleteOnboarding, prefilledRole }) 
   };
 
   const handleSubmit = async () => {
-    if (!targetRole.trim()) {
-      alert("Please specify your target role.");
+    const trimmedRole = targetRole.trim();
+    if (!trimmedRole || trimmedRole.length < 2) {
+      alert("Please enter a valid target career role (at least 2 characters).");
       return;
     }
 
+    const validHours = Math.max(1, Math.min(80, parseInt(hoursPerWeek, 10) || 10));
+    const validWeeks = Math.max(2, Math.min(104, parseInt(durationWeeks, 10) || 12));
+    const validName = name.trim() || 'Developer';
+
     setSubmitting(true);
     const userProfile = {
-      name,
-      target_role: targetRole,
+      name: validName,
+      target_role: trimmedRole,
       experience_level: experienceLevel,
       current_skills: currentSkills,
-      hours_per_week: hoursPerWeek,
-      duration_weeks: durationWeeks,
+      hours_per_week: validHours,
+      duration_weeks: validWeeks,
       resume_filename: resumeFilename
     };
 
