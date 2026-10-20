@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from './api';
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import CareerExplorerPage from './pages/CareerExplorerPage';
@@ -101,7 +102,7 @@ export default function App() {
     localStorage.setItem('pathai_active_user', JSON.stringify(updatedUser));
 
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/roadmap/${activeUser.user_id}`);
+      const res = await fetch(`${API_BASE_URL}/roadmap/${activeUser.user_id}`);
       if (res.ok) {
         const fullData = await res.json();
         setRoadmapData(fullData);

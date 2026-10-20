@@ -1,17 +1,26 @@
 import os
 import json
 import uuid
+import logging
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 from database import init_db, get_db_connection
-from resume_parser import parse_resume
+from resume_parser import ResumeParseError, parse_resume
 from ai_engine import analyze_skill_gap, generate_roadmap, explore_careers
 
 FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'))
 
 app = Flask(__name__, static_folder=FRONTEND_DIST, static_url_path='')
-CORS(app)
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "http://127.0.0.1:5173,http://localhost:5173").split(",")
+    if origin.strip()
+]
+CORS(app, resources={r"/api/*": {"origins": cors_origins}})
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+logger = logging.getLogger(__name__)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -20,16 +29,51 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Ensure database is initialized on startup
 init_db()
 
+def read_json_object():
+    if not request.is_json:
+        return None
+    data = request.get_json(silent=True)
+    return data if isinstance(data, dict) else None
+
+def bounded_integer(data, field, default, minimum, maximum):
+    value = data.get(field, default)
+    if isinstance(value, bool) or not isinstance(value, (int, str)):
+        raise ValueError
+    parsed = int(value)
+    return max(minimum, min(maximum, parsed))
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_large_request(error):
+    return jsonify({"error": "The uploaded file is too large. The maximum size is 10 MB."}), 413
+
+@app.errorhandler(HTTPException)
+def handle_http_error(error):
+    if request.path.startswith('/api/'):
+        return jsonify({"error": error.description}), error.code
+    return error
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(error):
+    logger.exception("Unhandled request error")
+    if request.path.startswith('/api/'):
+        return jsonify({"error": "An unexpected server error occurred. Check the backend terminal for details."}), 500
+    return "An unexpected server error occurred.", 500
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "ok", "message": "AI Roadmap Generator API is running"}), 200
 
 @app.route('/api/career-explorer', methods=['POST'])
 def career_explorer_endpoint():
-    data = request.json or {}
+    data = read_json_object()
+    if data is None:
+        return jsonify({"error": "Send a JSON object in the request body."}), 400
     user_input = data.get("input_text", "")
-    
-    if not (user_input.strip() if isinstance(user_input, str) else ""):
+    if not isinstance(user_input, str):
+        return jsonify({"error": "input_text must be a string."}), 400
+    if len(user_input) > 5000:
+        return jsonify({"error": "input_text must be 5000 characters or fewer."}), 400
+    if not user_input.strip():
         user_input = "mathematics, computers, problem solving"
 
     result = explore_careers(user_input)
@@ -47,39 +91,55 @@ def upload_resume():
     if not file.filename.lower().endswith('.pdf'):
         return jsonify({"error": "Only PDF files are supported"}), 400
 
-    filename = secure_filename(f"{uuid.uuid4().hex[:8]}_{file.filename}")
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(filepath)
-
-    result = parse_resume(filepath)
+    safe_filename = secure_filename(file.filename)
+    if not safe_filename:
+        return jsonify({"error": "The selected PDF filename is not valid."}), 400
+    filename = f"{uuid.uuid4().hex[:8]}_{safe_filename}"
+    try:
+        result = parse_resume(file.stream)
+    except ResumeParseError as error:
+        return jsonify({"error": str(error)}), 422
     result["filename"] = filename
 
     return jsonify(result), 200
 
 @app.route('/api/analyze-gap', methods=['POST'])
 def analyze_gap_endpoint():
-    data = request.json or {}
+    data = read_json_object()
+    if data is None:
+        return jsonify({"error": "Send a JSON object in the request body."}), 400
 
-    user_id = data.get("user_id", f"user_{uuid.uuid4().hex[:8]}")
-    name = str(data.get("name", "User")).strip() or "User"
-    experience_level = str(data.get("experience_level", "Intermediate")).strip()
+    user_id = data.get("user_id") or f"user_{uuid.uuid4().hex[:8]}"
+    name = data.get("name", "User")
+    experience_level = data.get("experience_level", "Intermediate")
     current_skills = data.get("current_skills", [])
-    target_role = str(data.get("target_role", "Full-Stack Developer")).strip()
-    
-    if not target_role or len(target_role) < 2:
-        return jsonify({"error": "target_role must be a valid string of at least 2 characters"}), 400
+    target_role = data.get("target_role", "Full-Stack Developer")
+
+    if not isinstance(user_id, str) or not user_id.strip() or len(user_id) > 100:
+        return jsonify({"error": "user_id must be a non-empty string of 100 characters or fewer."}), 400
+    if not isinstance(name, str) or len(name) > 100:
+        return jsonify({"error": "name must be a string of 100 characters or fewer."}), 400
+    if not isinstance(experience_level, str) or experience_level not in {"Beginner", "Intermediate", "Advanced"}:
+        return jsonify({"error": "experience_level must be Beginner, Intermediate, or Advanced."}), 400
+    if not isinstance(target_role, str):
+        return jsonify({"error": "target_role must be a string between 2 and 160 characters."}), 400
+    target_role = target_role.strip()
+    if len(target_role) < 2 or len(target_role) > 160:
+        return jsonify({"error": "target_role must be a string between 2 and 160 characters."}), 400
+    name = name.strip() or "User"
+    if not isinstance(current_skills, list) or len(current_skills) > 100 or any(not isinstance(skill, str) or len(skill) > 100 for skill in current_skills):
+        return jsonify({"error": "current_skills must be a list of up to 100 strings, each 100 characters or fewer."}), 400
+    current_skills = list(dict.fromkeys(skill.strip() for skill in current_skills if skill.strip()))
+
+    resume_filename = data.get("resume_filename", "")
+    if not isinstance(resume_filename, str) or len(resume_filename) > 255:
+        return jsonify({"error": "resume_filename must be a string of 255 characters or fewer."}), 400
 
     try:
-        hours_per_week = max(1, min(80, int(data.get("hours_per_week", 10))))
-    except (ValueError, TypeError):
-        hours_per_week = 10
-
-    try:
-        duration_weeks = max(2, min(104, int(data.get("duration_weeks", 12))))
-    except (ValueError, TypeError):
-        duration_weeks = 12
-
-    resume_filename = str(data.get("resume_filename", "")).strip()
+        hours_per_week = bounded_integer(data, "hours_per_week", 10, 1, 80)
+        duration_weeks = bounded_integer(data, "duration_weeks", 12, 2, 104)
+    except (ValueError, TypeError, OverflowError):
+        return jsonify({"error": "hours_per_week and duration_weeks must be whole numbers."}), 400
 
     # Perform analysis
     analysis_result = analyze_skill_gap(current_skills, target_role, experience_level)
@@ -120,11 +180,13 @@ def analyze_gap_endpoint():
 
 @app.route('/api/generate-roadmap', methods=['POST'])
 def generate_roadmap_endpoint():
-    data = request.json or {}
+    data = read_json_object()
+    if data is None:
+        return jsonify({"error": "Send a JSON object in the request body."}), 400
     user_id = data.get("user_id")
 
-    if not user_id:
-        return jsonify({"error": "user_id is required"}), 400
+    if not isinstance(user_id, str) or not user_id.strip() or len(user_id) > 100:
+        return jsonify({"error": "user_id must be a non-empty string of 100 characters or fewer."}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -169,17 +231,16 @@ def generate_roadmap_endpoint():
         json.dumps(roadmap_data.get("phases", []))
     ))
 
-    # Initialize Task Progress items
-    for phase in roadmap_data.get("phases", []):
-        phase_id = phase.get("phase_id", 1)
-        for task in phase.get("tasks", []):
-            task_id = task.get("id")
-            task_name = task.get("title", "")
-            if task_id:
-                cursor.execute('''
-                    INSERT OR IGNORE INTO task_progress (id, user_id, roadmap_id, phase_id, task_id, task_name, is_completed)
-                    VALUES (?, ?, ?, ?, ?, ?, 0)
-                ''', (f"tp_{uuid.uuid4().hex[:8]}", user_id, roadmap_id, phase_id, task_id, task_name))
+    task_progress_rows = [
+        (f"tp_{uuid.uuid4().hex[:8]}", user_id, roadmap_id, phase.get("phase_id", 1), task.get("id"), task.get("title", ""), 0)
+        for phase in roadmap_data.get("phases", [])
+        for task in phase.get("tasks", [])
+        if task.get("id")
+    ]
+    cursor.executemany('''
+        INSERT OR IGNORE INTO task_progress (id, user_id, roadmap_id, phase_id, task_id, task_name, is_completed)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', task_progress_rows)
 
     conn.commit()
     conn.close()
@@ -272,14 +333,19 @@ def get_roadmap_endpoint(user_id):
 
 @app.route('/api/progress/toggle', methods=['POST'])
 def toggle_progress_endpoint():
-    data = request.json or {}
+    data = read_json_object()
+    if data is None:
+        return jsonify({"error": "Send a JSON object in the request body."}), 400
     user_id = data.get("user_id")
     roadmap_id = data.get("roadmap_id")
     task_id = data.get("task_id")
-    is_completed = 1 if data.get("is_completed") else 0
+    completed_value = data.get("is_completed", False)
 
-    if not user_id or not roadmap_id or not task_id:
-        return jsonify({"error": "user_id, roadmap_id, and task_id are required"}), 400
+    if not all(isinstance(value, str) and value.strip() and len(value) <= 100 for value in (user_id, roadmap_id, task_id)):
+        return jsonify({"error": "user_id, roadmap_id, and task_id must be non-empty strings of 100 characters or fewer."}), 400
+    if not isinstance(completed_value, (bool, int)) or completed_value not in (False, True, 0, 1):
+        return jsonify({"error": "is_completed must be a boolean."}), 400
+    is_completed = 1 if completed_value else 0
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -289,14 +355,19 @@ def toggle_progress_endpoint():
         SET is_completed = ?, updated_at = CURRENT_TIMESTAMP
         WHERE user_id = ? AND roadmap_id = ? AND task_id = ?
     ''', (is_completed, user_id, roadmap_id, task_id))
+    if cursor.rowcount == 0:
+        conn.close()
+        return jsonify({"error": "The requested roadmap task was not found."}), 404
 
-    # Recalculate stats
-    progress_rows = cursor.execute('SELECT is_completed FROM task_progress WHERE user_id = ? AND roadmap_id = ?', (user_id, roadmap_id)).fetchall()
+    stats_row = cursor.execute(
+        'SELECT COUNT(*) AS total_tasks, COALESCE(SUM(is_completed), 0) AS completed_tasks FROM task_progress WHERE user_id = ? AND roadmap_id = ?',
+        (user_id, roadmap_id)
+    ).fetchone()
     conn.commit()
     conn.close()
 
-    total_tasks = len(progress_rows)
-    completed_tasks = sum(1 for row in progress_rows if row["is_completed"])
+    total_tasks = stats_row["total_tasks"]
+    completed_tasks = stats_row["completed_tasks"]
     overall_progress = int(round((completed_tasks / total_tasks * 100))) if total_tasks > 0 else 0
 
     return jsonify({
@@ -406,13 +477,15 @@ def get_dashboard_endpoint(user_id):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
+    if path.startswith('api/'):
+        return jsonify({"error": "API endpoint not found."}), 404
     if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     else:
         return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8000))
     print(f"Serving frontend from: {FRONTEND_DIST}")
     print(f"Starting AI Roadmap Generator Flask API on http://0.0.0.0:{port}...")
     app.run(host='0.0.0.0', port=port, debug=False)

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../api';
 import confetti from 'canvas-confetti';
 import { 
   CheckCircle2, Circle, Layers, BookOpen, Rocket, ExternalLink, 
@@ -33,7 +34,7 @@ export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate 
     const newStatus = !currentCompletedStatus;
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/progress/toggle', {
+      const res = await fetch(`${API_BASE_URL}/progress/toggle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -66,10 +67,10 @@ export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate 
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+    <div className="animate-fade-in roadmap-shell" style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
       
       {/* Header Banner */}
-      <div className="glass-card" style={{
+      <div className="glass-card roadmap-hero" style={{
         padding: '2.2rem',
         background: 'linear-gradient(135deg, rgba(22, 27, 38, 0.95) 0%, rgba(15, 20, 31, 0.95) 100%)',
         display: 'flex',
@@ -270,7 +271,7 @@ export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate 
               </div>
 
               {/* Phase Glass Card */}
-              <div className="glass-card" style={{ 
+              <div className="glass-card roadmap-phase" style={{
                 padding: '2rem', 
                 display: 'flex', 
                 flexDirection: 'column', 

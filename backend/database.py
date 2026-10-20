@@ -1,11 +1,11 @@
 import json
 import sqlite3
-from datetime import datetime
+import os
 
-DB_PATH = 'roadmap_generator.db'
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'roadmap_generator.db')
 
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -69,6 +69,10 @@ def init_db():
             UNIQUE(user_id, roadmap_id, task_id)
         )
     ''')
+
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_skill_gaps_user_created ON skill_gaps(user_id, created_at DESC)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_roadmaps_user_created ON roadmaps(user_id, created_at DESC)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_progress_user_roadmap ON task_progress(user_id, roadmap_id)')
 
     conn.commit()
     conn.close()
