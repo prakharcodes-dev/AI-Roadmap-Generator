@@ -11,8 +11,8 @@ export default function Navbar({ activePage, setActivePage, activeUser }) {
   ];
 
   return (
-    <header style={{
-      sticky: 'top',
+    <header className="site-header" style={{
+      position: 'sticky',
       top: 0,
       zIndex: 50,
       backdropFilter: 'blur(16px)',
@@ -56,7 +56,7 @@ export default function Navbar({ activePage, setActivePage, activeUser }) {
         </div>
 
         {/* Center Nav Links */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <nav className="site-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activePage === item.id;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../api';
 import confetti from 'canvas-confetti';
 import { 
   BarChart3, CheckCircle2, Clock, ShieldCheck, Flame, ArrowRight, 
@@ -12,7 +13,7 @@ export default function DashboardPage({ activeUser, roadmapData, onProgressUpdat
   const fetchDashboard = async () => {
     if (!activeUser?.user_id) return;
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/dashboard/${activeUser.user_id}`);
+      const res = await fetch(`${API_BASE_URL}/dashboard/${activeUser.user_id}`);
       if (!res.ok) throw new Error("Dashboard fetch failed");
       const data = await res.json();
       setDashboard(data);
@@ -33,7 +34,7 @@ export default function DashboardPage({ activeUser, roadmapData, onProgressUpdat
     const task = dashboard.next_task;
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/progress/toggle', {
+      const res = await fetch(`${API_BASE_URL}/progress/toggle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

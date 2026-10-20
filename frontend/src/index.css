@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg-dark: #090D16;
-  --bg-card: rgba(19, 25, 38, 0.75);
+  --bg-dark: #080B13;
+  --bg-card: rgba(17, 24, 39, 0.94);
   --bg-card-hover: rgba(26, 34, 52, 0.85);
-  --bg-card-border: rgba(255, 255, 255, 0.08);
+  --bg-card-border: rgba(148, 163, 184, 0.16);
   --border-glow: rgba(139, 92, 246, 0.35);
   
-  --primary-purple: #8B5CF6;
+  --primary-purple: #8B72F8;
   --primary-purple-hover: #7C3AED;
   --accent-blue: #3B82F6;
   --accent-cyan: #06B6D4;
@@ -16,7 +16,7 @@
   --accent-rose: #EF4444;
 
   --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
+  --text-muted: #AAB5C7;
   --text-subtle: #64748B;
 
   --radius-sm: 8px;
@@ -52,8 +52,8 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 2.5rem 1.5rem;
-  max-width: 1240px;
+  padding: clamp(1.25rem, 3vw, 3rem) clamp(1rem, 3vw, 2rem);
+  max-width: 1320px;
   width: 100%;
   margin: 0 auto;
 }
@@ -281,3 +281,38 @@ h1, h2, h3, h4, h5 {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(139, 92, 246, 0.4);
 }
+
+.site-header { position: sticky !important; top: 0; z-index: 50; box-shadow: 0 8px 32px rgba(0,0,0,.2); }
+.site-nav button:hover:not(:disabled) { background: rgba(139,114,248,.12) !important; color: #e9e3ff !important; }
+.onboarding-shell { max-width: 860px !important; gap: 2rem !important; }
+.onboarding-shell > div:first-child { padding: 1.4rem 1rem; }
+.onboarding-shell h1 { font-size: clamp(1.8rem,5vw,2.7rem) !important; letter-spacing: -.045em; }
+.onboarding-panel { padding: clamp(1.25rem,4vw,2.6rem) !important; gap: 1.6rem !important; background: linear-gradient(145deg,rgba(21,29,46,.98),rgba(13,18,30,.98)); border-color: rgba(167,139,250,.24); box-shadow: 0 24px 70px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.035); }
+.onboarding-panel h2 { font-size: clamp(1.15rem,3vw,1.45rem) !important; }
+.form-input,.form-select,.form-textarea { min-height: 3.15rem; background: rgba(7,11,20,.76); border-color: rgba(148,163,184,.24); }
+.form-input:hover,.form-select:hover { border-color: rgba(167,139,250,.55); }
+.form-label { letter-spacing: .01em; }
+.btn-primary,.btn-secondary { min-height: 2.8rem; }
+.onboarding-panel .badge { transition: transform .18s ease,border-color .18s ease,background .18s ease; }
+.onboarding-panel button.badge:hover { transform: translateY(-2px); border-color: rgba(196,181,253,.7) !important; }
+.roadmap-shell { gap: 2rem !important; }
+.roadmap-hero { padding: clamp(1.4rem,4vw,2.5rem) !important; background: radial-gradient(ellipse at 90% 0%,rgba(139,92,246,.21),transparent 45%),linear-gradient(135deg,#151d2e,#0c1220) !important; border-color: rgba(167,139,250,.26) !important; box-shadow: 0 24px 70px rgba(0,0,0,.3) !important; }
+.roadmap-hero h1 { font-size: clamp(1.7rem,4vw,2.35rem) !important; letter-spacing: -.04em; }
+.roadmap-phase { background: linear-gradient(145deg,rgba(20,28,44,.98),rgba(13,18,30,.98)) !important; }
+.roadmap-phase:hover { border-color: rgba(167,139,250,.38) !important; transform: translateY(-2px); }
+.glass-card { box-shadow: 0 12px 36px rgba(0,0,0,.2); transition: transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+.glass-card-interactive:hover { box-shadow: 0 18px 40px rgba(0,0,0,.3),0 0 28px rgba(139,92,246,.12); }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible { outline: 2px solid #a78bfa; outline-offset: 3px; }
+@media (max-width:760px) {
+ .main-content { padding: 1.15rem .9rem 2rem; }
+ .site-header > div { flex-wrap: wrap; gap: .8rem !important; }
+ .site-header nav { order: 3; width: 100%; overflow-x: auto; justify-content: flex-start !important; padding-bottom: .15rem; }
+ .site-nav button { flex: 0 0 auto; padding: .5rem .7rem !important; }
+ .onboarding-shell,.roadmap-shell { gap: 1.2rem !important; }
+ .roadmap-phase { padding: 1.1rem !important; }
+ .roadmap-shell > div:last-child > div { padding-left: 3.5rem !important; }
+ .roadmap-shell > div:last-child > div > div:first-child { width: 44px !important; height: 44px !important; }
+ .roadmap-shell > div:last-child > div > div:first-child + div { padding: 1.15rem !important; }
+}
+@media (max-width:440px) { .site-header { padding: .7rem .85rem !important; } .site-header > div > div:last-child { display:none; } .btn-primary,.btn-secondary { padding: .7rem 1rem; } }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; } }

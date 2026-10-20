@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../api';
 import { 
   Sparkles, Briefcase, Award, Clock, Calendar, FileText, 
   Plus, X, Upload, ArrowRight, ArrowLeft, CheckCircle2, ShieldCheck 
@@ -47,7 +48,7 @@ export default function OnboardingPage({ onCompleteOnboarding, prefilledRole }) 
     const file = e.target.files[0];
     if (!file) return;
 
-    if (!file.name.toLowerCase().endswith('.pdf')) {
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
       alert("Please upload a PDF file.");
       return;
     }
@@ -57,12 +58,15 @@ export default function OnboardingPage({ onCompleteOnboarding, prefilledRole }) 
     formData.append('resume', file);
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/resume/upload', {
+      const res = await fetch(`${API_BASE_URL}/resume/upload`, {
         method: 'POST',
         body: formData
       });
 
-      if (!res.ok) throw new Error("Resume upload failed");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Resume upload failed.");
+      }
       const data = await res.json();
 
       if (data.extracted_skills && data.extracted_skills.length > 0) {
@@ -75,7 +79,7 @@ export default function OnboardingPage({ onCompleteOnboarding, prefilledRole }) 
       alert(`Resume parsed successfully! Extracted ${data.extracted_skills?.length || 0} skills.`);
     } catch (err) {
       console.error(err);
-      alert("Error parsing resume PDF.");
+      alert(err.message || "Error parsing resume PDF.");
     } finally {
       setUploadingResume(false);
     }
@@ -104,25 +108,30 @@ export default function OnboardingPage({ onCompleteOnboarding, prefilledRole }) 
     };
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/analyze-gap', {
+      const res = await fetch(`${API_BASE_URL}/analyze-gap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userProfile)
       });
 
-      if (!res.ok) throw new Error("Analysis failed");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Skill-gap analysis failed.");
+      }
       const analysisData = await res.json();
       onCompleteOnboarding(analysisData, userProfile);
     } catch (err) {
       console.error(err);
-      alert("Failed to perform AI analysis. Please check backend connection.");
+      alert(err.message === "Failed to fetch"
+        ? "Could not reach the backend. Start the application from the project root and keep its terminal open."
+        : err.message || "Skill-gap analysis failed.");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="animate-fade-in onboarding-shell" style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* Wizard Header & Progress Bar */}
       <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -150,7 +159,7 @@ export default function OnboardingPage({ onCompleteOnboarding, prefilledRole }) 
 
       {/* STEP 1: TARGET CAREER ROLE */}
       {currentStep === 1 && (
-        <div className="glass-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+        <div className="glass-card onboarding-panel" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Briefcase size={20} color="#8B5CF6" /> Step 1: Select Your Target Career Goal
           </h2>
@@ -205,7 +214,7 @@ export default function OnboardingPage({ onCompleteOnboarding, prefilledRole }) 
 
       {/* STEP 2: SKILLS & RESUME PDF UPLOAD */}
       {currentStep === 2 && (
-        <div className="glass-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+        <div className="glass-card onboarding-panel" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Award size={20} color="#3B82F6" /> Step 2: What Do You Already Know?
           </h2>
@@ -288,7 +297,7 @@ export default function OnboardingPage({ onCompleteOnboarding, prefilledRole }) 
 
       {/* STEP 3: EXPERIENCE & TIME COMMITMENT */}
       {currentStep === 3 && (
-        <div className="glass-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+        <div className="glass-card onboarding-panel" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Clock size={20} color="#10B981" /> Step 3: Experience Level & Time Commitment
           </h2>

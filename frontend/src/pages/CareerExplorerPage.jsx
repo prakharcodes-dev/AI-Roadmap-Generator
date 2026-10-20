@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../api';
 import { Compass, Sparkles, ArrowRight, Search, CheckCircle2, DollarSign } from 'lucide-react';
 
 export default function CareerExplorerPage({ onSelectCareer }) {
@@ -21,7 +22,7 @@ export default function CareerExplorerPage({ onSelectCareer }) {
 
     setLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/career-explorer', {
+      const res = await fetch(`${API_BASE_URL}/career-explorer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input_text: text })

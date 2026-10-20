@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../api';
 import { Sparkles, CheckCircle2, AlertTriangle, XCircle, ArrowRight, ShieldCheck, Cpu, Check, X, Info } from 'lucide-react';
 
 export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
@@ -28,19 +29,24 @@ export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
     const timer3 = setTimeout(() => setStatusMessage("🚀 Finalizing your personalized career roadmap..."), 1800);
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/generate-roadmap', {
+      const res = await fetch(`${API_BASE_URL}/generate-roadmap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: activeUser.user_id })
       });
 
-      if (!res.ok) throw new Error("Failed to generate roadmap");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Roadmap generation failed.");
+      }
 
       const data = await res.json();
       onGenerateRoadmap(data.roadmap, data.roadmap_id);
     } catch (err) {
       console.error(err);
-      alert("Error generating roadmap. Make sure backend is running on http://127.0.0.1:5000");
+      alert(err.message === "Failed to fetch"
+        ? "Could not reach the backend. Start the application from the project root and keep its terminal open."
+        : err.message || "Roadmap generation failed.");
     } finally {
       clearTimeout(timer1);
       clearTimeout(timer2);

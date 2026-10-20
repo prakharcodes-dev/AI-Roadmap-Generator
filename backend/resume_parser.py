@@ -1,6 +1,11 @@
 import re
-import os
+import logging
 from pypdf import PdfReader
+
+logger = logging.getLogger(__name__)
+
+class ResumeParseError(ValueError):
+    pass
 
 # Canonical skill taxonomy mapping (Alias -> Normalized Canonical Name)
 SKILL_ALIASES = {
@@ -124,6 +129,10 @@ def extract_text_from_pdf(pdf_path):
     """Extract and sanitize text from a PDF file."""
     try:
         reader = PdfReader(pdf_path)
+        if reader.is_encrypted and not reader.decrypt(""):
+            raise ResumeParseError("Password-protected PDFs are not supported.")
+        if len(reader.pages) > 100:
+            raise ResumeParseError("The PDF has too many pages to process safely.")
         text = ""
         for page in reader.pages:
             extracted = page.extract_text()
@@ -132,9 +141,11 @@ def extract_text_from_pdf(pdf_path):
         # Sanitize control characters
         text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', text)
         return text
-    except Exception as e:
-        print(f"Error reading PDF {pdf_path}: {e}")
-        return ""
+    except ResumeParseError:
+        raise
+    except Exception as exc:
+        logger.warning("Resume PDF parsing failed (%s)", type(exc).__name__)
+        raise ResumeParseError("The uploaded file is not a readable PDF.") from exc
 
 def extract_skills_from_text(text):
     """Extract recognized technical & professional skills using strict boundary matching."""
@@ -144,13 +155,9 @@ def extract_skills_from_text(text):
     found_skills = set()
     text_lower = text.lower()
 
-    # Iterate through known aliases and search with word boundaries
     for alias, canonical in SKILL_ALIASES.items():
-        # Avoid matching short single/double letter tokens inside words unless strict boundary
         escaped_alias = re.escape(alias)
-        # Boundary pattern supporting symbols like C++, C#, .js, etc.
         pattern = r'(?:^|[^\w#+])' + escaped_alias + r'(?:$|[^\w#+])'
-        
         if re.search(pattern, text_lower):
             found_skills.add(canonical)
 
@@ -159,6 +166,8 @@ def extract_skills_from_text(text):
 def parse_resume(pdf_path):
     """Parse resume PDF and return clean metadata + normalized skills list."""
     text = extract_text_from_pdf(pdf_path)
+    if not text.strip():
+        raise ResumeParseError("The PDF contains no selectable text. Upload a text-based PDF.")
     skills = extract_skills_from_text(text)
     
     text_lower = text.lower()
