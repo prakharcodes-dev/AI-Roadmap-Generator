@@ -164,6 +164,8 @@ export default function App() {
           <LandingPage 
             onStartOnboarding={() => setActivePage('onboarding')} 
             onOpenExplorer={() => setActivePage('explorer')}
+            onSelectCareer={handleSelectCareerFromExplorer}
+            setActivePage={setActivePage}
           />
         )}
 
@@ -204,15 +206,17 @@ export default function App() {
         )}
       </main>
 
-      <footer style={{
-        textAlign: 'center',
-        padding: '2rem 1.5rem',
-        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-        color: '#64748B',
-        fontSize: '0.85rem'
-      }}>
-        <p>© 2026 PathAI Multi-Career Learning Roadmap Platform</p>
-      </footer>
+      {activePage !== 'landing' && (
+        <footer style={{
+          textAlign: 'center',
+          padding: '2rem 1.5rem',
+          borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+          color: '#64748B',
+          fontSize: '0.85rem'
+        }}>
+          <p>© 2026 PathAI Multi-Career Learning Roadmap Platform</p>
+        </footer>
+      )}
     </div>
   );
 }
