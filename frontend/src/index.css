@@ -316,3 +316,89 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible { 
 }
 @media (max-width:440px) { .site-header { padding: .7rem .85rem !important; } .site-header > div > div:last-child { display:none; } .btn-primary,.btn-secondary { padding: .7rem 1rem; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+
+/* ==========================================================================
+   HOMEPAGE REDESIGN (PathAI - Your Personalized Career Roadmap)
+   ========================================================================== */
+
+:root {
+  --homepage-bg: #070817;
+  --homepage-bg-secondary: #0D1028;
+  --homepage-card-bg: #11152D;
+  --homepage-primary-purple: #7138FF;
+  --homepage-secondary-purple: #A855F7;
+  --homepage-accent-blue: #386BFF;
+  --homepage-text-main: #FFFFFF;
+  --homepage-text-muted: #A5AEC7;
+}
+
+.homepage-wrapper {
+  max-width: 1240px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.navbar-pill {
+  transition: all 0.25s ease;
+}
+
+@media (max-width: 960px) {
+  .hero-section {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem !important;
+    text-align: center;
+  }
+  
+  .hero-section > div:first-child {
+    align-items: center;
+  }
+  
+  .hero-section p {
+    margin: 0 auto;
+  }
+
+  .how-it-works-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+
+  .connecting-arrow {
+    display: none !important;
+  }
+
+  .desktop-nav-links {
+    display: none !important;
+  }
+
+  .mobile-nav-toggle {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-section h1 {
+    font-size: 2.15rem !important;
+  }
+  
+  .cta-banner-section {
+    padding: 2rem 1.5rem !important;
+    text-align: center;
+    justify-content: center !important;
+  }
+  
+  .cta-banner-section > div:first-child {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .homepage-footer {
+    flex-direction: column;
+    align-items: center !important;
+    text-align: center;
+    gap: 1.5rem !important;
+  }
+
+  .homepage-footer > div:last-child {
+    align-items: center !important;
+  }
+}
