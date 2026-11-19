@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  ArrowRight, Compass, Sparkles, CheckCircle2, ShieldCheck, 
+  ArrowRight, Sparkles, CheckCircle2, ShieldCheck,
   Trophy, ChevronRight, User, Map, Flag, Target, 
   BarChart3, Code2, Scale, Stethoscope, Database, 
   Landmark, Rocket, X, Star

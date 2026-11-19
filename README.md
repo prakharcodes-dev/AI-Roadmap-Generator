@@ -24,7 +24,7 @@ Install frontend packages once:
 npm --prefix frontend install
 ```
 
-You do not need a `.env` file to run the current local skill analysis and roadmap generation. The current backend does not make Gemini model-generation calls, so `GEMINI_API_KEY` does not enable those calls.
+You do not need a `.env` file to run the current local skill analysis and roadmap generation. These functions use local rule-based logic; the project does not currently make Gemini model-generation calls or require a Gemini API key.
 
 ## Run the backend
 

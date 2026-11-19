@@ -24,8 +24,7 @@ export default function App() {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
-        // Fallback
+      } catch {
       }
     }
     return {
@@ -43,8 +42,7 @@ export default function App() {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
-        // Fallback
+      } catch {
       }
     }
     return null;
@@ -112,7 +110,7 @@ export default function App() {
         setRoadmapData(fallbackData);
         localStorage.setItem('pathai_roadmap_data', JSON.stringify(fallbackData));
       }
-    } catch (e) {
+    } catch {
       const fallbackData = { roadmap, stats: { total_tasks: 12, completed_tasks: 0, overall_progress: 0 } };
       setRoadmapData(fallbackData);
       localStorage.setItem('pathai_roadmap_data', JSON.stringify(fallbackData));
