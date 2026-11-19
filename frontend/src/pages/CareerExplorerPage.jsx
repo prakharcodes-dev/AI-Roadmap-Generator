@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../api';
-import { Compass, Sparkles, ArrowRight, Search, CheckCircle2, DollarSign } from 'lucide-react';
+import { Compass, ArrowRight, Search, DollarSign } from 'lucide-react';
 
 export default function CareerExplorerPage({ onSelectCareer }) {
   const [inputText, setInputText] = useState('');

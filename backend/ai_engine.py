@@ -1,19 +1,4 @@
-import os
-import json
-import uuid
-import re
-import google.generativeai as genai
-from dotenv import load_dotenv
 from resume_parser import normalize_skill_name
-
-load_dotenv()
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-if GEMINI_API_KEY:
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-    except Exception as e:
-        print(f"Gemini config notice: {e}")
 
 # Multi-Career Skill Taxonomies across diverse fields
 CAREER_TAXONOMIES = {

@@ -1,17 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '../api';
 import confetti from 'canvas-confetti';
 import { 
-  BarChart3, CheckCircle2, Clock, ShieldCheck, Flame, ArrowRight, 
-  Layers, Sparkles, Trophy, Calendar, CheckSquare, Star 
+  BarChart3, ShieldCheck, Flame, Layers, Sparkles, Trophy, CheckSquare
 } from 'lucide-react';
 
 export default function DashboardPage({ activeUser, roadmapData, onProgressUpdate }) {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
-  const fetchDashboard = async () => {
-    if (!activeUser?.user_id) return;
+  const fetchDashboard = useCallback(async () => {
+    if (!activeUser?.user_id) {
+      setDashboard(null);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setLoadError('');
     try {
       const res = await fetch(`${API_BASE_URL}/dashboard/${activeUser.user_id}`);
       if (!res.ok) throw new Error("Dashboard fetch failed");
@@ -19,14 +26,16 @@ export default function DashboardPage({ activeUser, roadmapData, onProgressUpdat
       setDashboard(data);
     } catch (err) {
       console.error(err);
+      setDashboard(null);
+      setLoadError('Could not load dashboard data. Check the backend connection and try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeUser?.user_id]);
 
   useEffect(() => {
     fetchDashboard();
-  }, [activeUser, roadmapData]);
+  }, [fetchDashboard, roadmapData]);
 
   const handleQuickCompleteNextTask = async () => {
     if (!dashboard?.next_task || !activeUser?.roadmap_id) return;
@@ -67,6 +76,15 @@ export default function DashboardPage({ activeUser, roadmapData, onProgressUpdat
       <div style={{ textAlign: 'center', padding: '4rem 0' }}>
         <Sparkles size={32} className="pulse-glow" color="#8B5CF6" />
         <p style={{ color: '#94A3B8', marginTop: '1rem' }}>Loading Career Dashboard Analytics...</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="glass-card" role="alert" style={{ maxWidth: '720px', margin: '2rem auto', textAlign: 'center' }}>
+        <p style={{ color: '#FCA5A5' }}>{loadError}</p>
+        <button className="btn-secondary" onClick={fetchDashboard} style={{ marginTop: '1rem' }}>Try again</button>
       </div>
     );
   }

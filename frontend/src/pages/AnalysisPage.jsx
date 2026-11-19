@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../api';
-import { Sparkles, CheckCircle2, AlertTriangle, XCircle, ArrowRight, ShieldCheck, Cpu, Check, X, Info } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Cpu, Check, X, Info } from 'lucide-react';
 
 export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
   const [generating, setGenerating] = useState(false);
@@ -8,7 +8,6 @@ export default function AnalysisPage({ activeUser, onGenerateRoadmap }) {
   const userProfile = activeUser?.profile || {};
 
   const strong = skillGap.strong_skills || [];
-  const improve = skillGap.improve_skills || [];
   const missing = skillGap.missing_skills || [];
   const readiness = skillGap.readiness_score || 50;
 

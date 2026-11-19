@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../api';
 import { 
-  Sparkles, Briefcase, Award, Clock, Calendar, FileText, 
-  Plus, X, Upload, ArrowRight, ArrowLeft, CheckCircle2, ShieldCheck 
+  Sparkles, Briefcase, Award, Clock, Calendar,
+  Plus, X, Upload, ArrowRight, ArrowLeft
 } from 'lucide-react';
 
 export default function OnboardingPage({ onCompleteOnboarding, prefilledRole }) {

@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../api';
 import confetti from 'canvas-confetti';
 import { 
   CheckCircle2, Circle, Layers, BookOpen, Rocket, ExternalLink, 
-  ChevronDown, ChevronUp, Calendar, Clock, Trophy, Sparkles, Award, Star, Cpu 
+  ChevronDown, ChevronUp, Calendar, Clock, Trophy, Sparkles, Star, Cpu
 } from 'lucide-react';
 
 export default function RoadmapPage({ roadmapData, activeUser, onProgressUpdate }) {
